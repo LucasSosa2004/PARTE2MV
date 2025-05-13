@@ -313,27 +313,18 @@ public class Operaciones {
 	
 	public void PUSH(byte tipoOpA, int opA) {
 		registros.setSP(registros.getSP()-4);
-		if(registros.getSP()<registros.getSS()) {
+		int limite = memoria.getDireccionFisica(registros.getSS());
+		int SP = memoria.getDireccionFisica(registros.getSP());
+		if(SP < limite) {
 			throw new IndexOutOfBoundsException("Stack Overflow");
 		}
 		int val = obtenerValorOperando(tipoOpA,opA);
 		memoria.escribirOperando(registros.getSP(),val);
 	}
 
-	/*
-	 * Extraer 4 bytes desde el tope de la pila.
-	 * 	2. Si al realizar esta acción, no se pudo completar porque no había bytes suficientes o la pila estaba
-	 * 	vacía, entonces será un STACK UNDERFLOW y se aborta la ejecución.
-	 * 	3. Convertir los 4 bytes extraídos en un valor, el cual tendrá en el byte más significativo lo que estaba
-	 * 	en el tope de la pila, y continúa en orden hasta el menos significativo.
-	 * 	4. Asignar el valor extraído al primer operando, si el operando es menor a 4 bytes se truncan los
-	 * 	bytes más significativos.
-	 * 	5. Incrementar el valor del SP en 4.
-	*/
 	public void POP(byte tipoOpA, int opA) {
 		try {
-			int val = memoria.leerPila(registros.getSP());				
-			System.out.println("VALOR"+ val);
+			int val = memoria.leerPila(registros.getSP());		
 			guardarValorEnDestino(tipoOpA,opA,val);
 			registros.setSP(registros.getSP()-4);
 		}
@@ -343,7 +334,15 @@ public class Operaciones {
 
 		
 	}
-	public void CALL(byte tipoOpA, int opA) {}
+	public void CALL(byte tipoOpA, int opA) {
+		byte i=1;//no deja poner cte abajo
+		PUSH(i,registros.getIP());
+		JMP(tipoOpA,opA);
+	}
+	public void RET() {
+		byte i=1;
+		POP(i,5); //pop ip
+	}
 	
 	public void SYS(byte tipoOpA, int opA) {
 		//System.out.println("entro al sys");
