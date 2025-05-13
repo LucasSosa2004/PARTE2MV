@@ -3,6 +3,7 @@ package maquinaVirtual;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 public class TablaDescripSegmentosV2 {
@@ -80,8 +81,20 @@ public class TablaDescripSegmentosV2 {
     
     
     public void mostrarTabla() {
+
     	for(DescriptorSegmento i: tabla) {
     		System.out.println(i.getNombre() + " : "+ i.getBase() + " - " +i.getLimite());
+    	}
+    }
+    
+    //se tiene que usar en un segmento siguiente al code segment
+    public DescriptorSegmento getAnterior(String segmento) {
+    	try {
+    		int i = getIndice(segmento);
+    		return this.tabla.get(i-1);
+    	}
+    	catch(NoSuchElementException e) {
+    		throw new NoSuchElementException("Es el primer segmento");
     	}
     }
     

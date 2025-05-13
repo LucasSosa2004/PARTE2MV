@@ -109,7 +109,7 @@ public class Memoria implements MemoriaBase {
 	public byte leerByteLogica(int direccionLogica) {
         return leerByte(getDireccionFisica(direccionLogica));
     }
-	
+	public int leerPila(int direccionLogica) {throw new RuntimeException("Version 1 no tiene pila");}
 	public void imprimirMemoria(int direccionLogica, int offset) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
     	for(int i=direccionFisica; i<direccionFisica + offset;i++)

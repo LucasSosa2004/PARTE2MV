@@ -303,7 +303,7 @@ public class Registros {
     
     public void mostrarRegistros() {
 		 for (HashMap.Entry<String, Integer> entrada : registros.entrySet()) {
-	         System.out.println(entrada.getKey() + ": " +  formatoBinario(entrada.getValue()));
+	         System.out.println(entrada.getKey() + ": " +  Integer.toHexString(entrada.getValue() & 0xFFFFFFFF));
 	     }
     }
     public static String formatoBinario(int valor) {

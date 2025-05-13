@@ -162,6 +162,21 @@ public class MemoriaV2 implements MemoriaBase {
     	return tabla;
     }
  
+    public int leerPila(int direccionLogica) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	
+        if (direccionFisica < tabla.getAnterior("SS").getLimite()) {
+            throw new IndexOutOfBoundsException("Stack Underflow");
+        }
+        int valor = 0;    	
+    	valor  = (memoria[direccionFisica++] & 0xFF) << 24;
+    	valor |= (memoria[direccionFisica++] & 0xFF) << 16;
+    	valor |= (memoria[direccionFisica++] & 0xFF) << 8;
+    	valor |= (memoria[direccionFisica++] & 0xFF);
+
+    	
+    	return valor;
+    }
     
 
     @Override
