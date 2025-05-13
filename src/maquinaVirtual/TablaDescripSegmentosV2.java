@@ -33,16 +33,16 @@ public class TablaDescripSegmentosV2 {
     }
 
     public void setTabla(HeaderMV header) {
-    	HashMap<String,Integer> segmentos = header.getSegmentos();
-    	for (HashMap.Entry<String, Integer> segmento : segmentos.entrySet()) { //clave y valor
-    		if(segmento.getValue()>0) {
+    	ArrayList<DescriptorSegmento> segmentos = header.getSegmentos();
+    	for (DescriptorSegmento segmento : segmentos) { //clave y valor
+    		if(segmento.getTamanio()>0) {
     			short base = 0;
     			if(!(tabla.isEmpty())) {
     				DescriptorSegmento anterior = tabla.getLast();    				
     				base = (short)(anterior.getLimite() + 1);    				
     			}
-    			short limite = (short)(base + segmento.getValue());
-    			agregarSegmento(segmento.getKey(),base,limite);
+    			short limite = (short)(base + segmento.getTamanio());
+    			agregarSegmento(segmento.getNombre(),base,limite);
     		}
     	}
     }

@@ -1,5 +1,6 @@
 package maquinaVirtual;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class HeaderMV {
@@ -17,8 +18,8 @@ public class HeaderMV {
     private int tamanoKS;
     private int entryPoint;
 
-    private HashMap<String,Integer> segmentos = new HashMap<String, Integer>();
-    
+//    private HashMap<String,Integer> segmentos = new HashMap<String, Integer>();
+    private ArrayList<DescriptorSegmento> segmentos = new ArrayList<DescriptorSegmento>();
     
     // Para .vmi
     private int memoriaKiB;
@@ -29,7 +30,7 @@ public class HeaderMV {
     }
 
     // Getters
-    public HashMap<String,Integer> getSegmentos(){
+    public ArrayList<DescriptorSegmento> getSegmentos(){
     	return segmentos;
     }
     
@@ -75,7 +76,7 @@ public class HeaderMV {
 
     // Setters
     public void agregarSegmento(String segmento, int tamanio) {
-    	segmentos.put(segmento, tamanio);
+    	segmentos.add(new DescriptorSegmento(segmento,tamanio));
     }
     
     public void setTamanoCodigov1(int tamanoCodigov1) {

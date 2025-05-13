@@ -64,7 +64,7 @@ public class Main {
                 cargarCodigo(fis, MV, header.getTamanoCodigov1());
             } else if (header.getVersion() == 2) {
                 int tamMemoria = memoriaKiB * 1024;
-                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria); // usa MemoriaV2 internamente
+                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria, false); // usa MemoriaV2 internamente
                 MV.getMemoriaV2().printPosiciones(0, 20);
                 TablaDescripSegmentosV2 tabla = MV.getTabla();
                 tabla.setTabla(header);
@@ -74,7 +74,7 @@ public class Main {
                 MV.getTabla().mostrarTabla();
                 //inicializarRegistrosV2(MV, header);
             } else {
-                System.err.println("Versi�n de VMX no soportada.");
+                System.err.println("Version de VMX no soportada.");
                 fis.close();
                 return;
             }
@@ -89,6 +89,7 @@ public class Main {
                 ejecutarDisassembler(MV, header);
             } else {
                 ejecutarPrograma(MV);
+                
             }
 
         } catch (Exception e) {
@@ -169,6 +170,16 @@ public class Main {
         }
     }
     
+    private static void cargarCodigoV2(FileInputStream fis, MaquinaVirtual MV, int tamanoCodigo) throws IOException { //en V2 se llama con el tamano del CS
+        int bytesLeidos = 0;
+        int byteLeido;
+        while (bytesLeidos < tamanoCodigo && (byteLeido = fis.read()) != -1) {
+            MV.getMemoriaV2().cargarByteAMemoria((byte) byteLeido, bytesLeidos);
+            bytesLeidos++;
+        }
+    }
+    
+    
     private static int mascara2bytes(byte pri, byte seg) {
     	return ((pri & 0xFF) << 8) | (seg & 0xFF);    	
     }
@@ -239,7 +250,7 @@ public class Main {
         boolean IPcayoSegm = false;
         while (!IPcayoSegm && bytesInstruccion != -1) {
             int IP = MV.getRegistros().getIP();
-            byte primerByte = MV.getMemoria().leerPrimerByte(IP);
+            byte primerByte = MV.getMemoriaV2().leerPrimerByte(IP);
             bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
             IPcayoSegm = MV.caidaSegmentoIP();
         }

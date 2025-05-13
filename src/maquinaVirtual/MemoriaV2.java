@@ -161,6 +161,10 @@ public class MemoriaV2 implements MemoriaBase {
     	return tabla;
     }
  
+    public byte leerPrimerByte(int dirLogicaIP) {
+		int dirFisicaIP = getDireccionFisica(dirLogicaIP); 
+		return leerByte(dirFisicaIP);
+	 }
 
     @Override
     public int getDireccionFisica(int direccionLogica) {

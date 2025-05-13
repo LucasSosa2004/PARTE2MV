@@ -253,7 +253,7 @@ public class Registros {
     
     public void mostrarRegistros() {
 		 for (HashMap.Entry<String, Integer> entrada : registros.entrySet()) {
-	         System.out.println(entrada.getKey() + ": " + entrada.getValue());
+	         System.out.println(entrada.getKey() + ": " +  Integer.toBinaryString(entrada.getValue()));
 	     }
     }
     

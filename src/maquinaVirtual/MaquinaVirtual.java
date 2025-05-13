@@ -22,10 +22,12 @@ public class MaquinaVirtual {
     
     //v2 
     //MaquinaVirtual(header, parametrosPrograma, tamMemoria);
-    public MaquinaVirtual(HeaderMV header, List<String> parametros,  int tamMemoria) {
+    public MaquinaVirtual(HeaderMV header, List<String> parametros,  int tamMemoria, boolean testMode) {
     	this.memoriaV2 = new MemoriaV2(header,parametros, tamMemoria);
     	this.tablaV2 = new TablaDescripSegmentosV2();
     	this.registros = new Registros();
+        this.unidadAritmeticoLogica = new UnidadAritmeticoLogica(registros, memoria, testMode);
+        this.dissasemblerAux = new DissasemblerAux(registros, memoria);
     }
 
 
