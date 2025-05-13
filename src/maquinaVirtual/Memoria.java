@@ -41,6 +41,11 @@ public class Memoria implements MemoriaBase {
 		this.memoria[posicion] = byteLeido;
 	}
 	
+	public void cargarByte(byte byteACargar, int direccionLogica) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	memoria[direccionFisica] = byteACargar;
+    }
+	
 	// Metodo para leer un byte desde una direccion fisica (Se usa internamente en esta clase)
 	//Las otras clases usan leerPrimerByte o leerOperando, ya que reciben dir_logicas
 	 public byte leerByte(int direccionFisica) {
@@ -108,15 +113,9 @@ public class Memoria implements MemoriaBase {
 	public void imprimirMemoria(int direccionLogica, int offset) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
     	for(int i=direccionFisica; i<direccionFisica + offset;i++)
-    		System.out.println(i + ": "+ Integer.toHexString(memoria[i]));
+    		System.out.println(i + ": "+ Integer.toHexString(memoria[i]& 0xFF));
     }
 
 
-	@Override
-	public void escribirEnPila(int valor, int direccionLogica) {
-		throw new IllegalArgumentException("Version 1 no escribe pila");
-	}
-    public int leerPila(int direccionLogica) {
-    	throw new IllegalArgumentException("Version 1 no lee pila");
-    }
+	
 }

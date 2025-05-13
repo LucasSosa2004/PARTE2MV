@@ -21,7 +21,7 @@ public class UnidadAritmeticoLogica {
         int bytesYaLeidosInstruccion = 1;  
         byte tipoOpA = 0, tipoOpB = 0;int valorOpA = 0, valorOpB = 0;int cantBytesOpA = 0, cantBytesOpB = 0;
         String instHexa = ""; String lineaDissasembler = "";
-        if (codOperacion >= 0 && codOperacion <= 0x09) {  // Instrucciones de un operando 
+        if (codOperacion >= 0 && codOperacion <= 0x0D) {  // Instrucciones de un operando 
             tipoOpA = (byte) ((primerByte >> 6) & 0x03); //aplico mascara para quedarme con los primeros dos bits
 
             valorOpA = obtenerOpEnMemoria(tipoOpA, bytesYaLeidosInstruccion); 
@@ -81,7 +81,7 @@ public class UnidadAritmeticoLogica {
         	this.setJumpEjecutado(false);
         }
         
-        if ((codOperacion >= 0 && codOperacion <= 0x09)) {
+        if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
         	ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
         }
         else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
@@ -139,8 +139,9 @@ public class UnidadAritmeticoLogica {
             case 6: operaciones.JNP(tipoOp, valorOp); break;
             case 7: operaciones.JNN(tipoOp, valorOp); break;
             case 8: operaciones.NOT(tipoOp, valorOp); break;
-            case 11: operaciones.PUSH(tipoOp, valorOp);break;
-            case 12: operaciones.POP(tipoOp,valorOp); break;
+            case 11:operaciones.PUSH(tipoOp, valorOp);break;
+            case 12:operaciones.POP(tipoOp,valorOp); break;
+            case 13:operaciones.CALL(tipoOp,valorOp); break;
             default: break;
         }
     }

@@ -162,25 +162,14 @@ public class MemoriaV2 implements MemoriaBase {
     	return tabla;
     }
  
+    
 
     @Override
 	 public byte leerPrimerByte(int dirLogicaIP) {
 		int dirFisicaIP = getDireccionFisica(dirLogicaIP); 
 		return leerByte(dirFisicaIP);
 	 }
-    public void escribirEnPila(int valor, int direccionLogica) {
-    	int direccionFisica = getDireccionFisica(direccionLogica);
-    	memoria[direccionFisica] = (byte)(valor >> 24);
-    	memoria[direccionFisica - 1] = (byte) (valor >> 16);
-    	memoria[direccionFisica - 2] = (byte) (valor >> 8);
-    	memoria[direccionFisica - 3] = (byte) valor;
-    }
-    
-    public int leerPila(int direccionLogica) {
-    	int direccionFisica = getDireccionFisica(direccionLogica);
-    	int valor = 0;
-    	return valor;
-    }
+
     @Override
     public int getDireccionFisica(int direccionLogica) {
         short segmento = (short) (direccionLogica >> 16);
@@ -200,6 +189,11 @@ public class MemoriaV2 implements MemoriaBase {
     @Override
     public void cargarByteAMemoria(byte byteLeido, int posicion) {
         memoria[posicion] = byteLeido;
+    }
+    
+    public void cargarByte(byte byteACargar, int direccionLogica) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	memoria[direccionFisica] = byteACargar;
     }
 
     
@@ -245,6 +239,6 @@ public class MemoriaV2 implements MemoriaBase {
     public void imprimirMemoria(int direccionLogica, int offset) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
     	for(int i=direccionFisica; i<direccionFisica + offset;i++)
-    		System.out.println(i + ": "+ Integer.toHexString(memoria[i]));
+    		System.out.println(i + ": "+ Integer.toHexString(memoria[i] & 0xFF));
     }
 }

@@ -15,7 +15,6 @@ public interface MemoriaBase {
 	        return segmento | offset;
 	    }*/
 	    byte leerPrimerByte(int dirLogicaIP);
-	    void escribirEnPila(int valor, int direccionLogica);
-	    int leerPila(int direccionLogica);
 	    public void imprimirMemoria(int direccionLogica, int offset);
+	    public void cargarByte(byte byteACargar, int direccionLogica);
 }

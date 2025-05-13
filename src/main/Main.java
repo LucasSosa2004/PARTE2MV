@@ -68,7 +68,7 @@ public class Main {
                 int tamMemoria = memoriaKiB * 1024;
                 MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria, false); // usa MemoriaV2 internamente
                 //cargarSegmentosV2(fis, MV, header);                
-                MV.getRegistros().cargarRegistrosV2(header, MV.getTabla());
+                //MV.getRegistros().cargarRegistrosV2(header, MV.getTabla());
                 cargarCodigo(fis,MV);
 
                 MV.getRegistros().mostrarRegistros();
@@ -81,7 +81,6 @@ public class Main {
                 fis.close();
                 return;
             }
-
             fis.close();
 
             if (archivoVMI != null) {
@@ -92,6 +91,9 @@ public class Main {
                 ejecutarDisassembler(MV, header);
             } else {
                 ejecutarPrograma(MV);
+                MV.getMemoria().imprimirMemoria(110,10);
+                MV.getMemoria().imprimirMemoria(175,10);
+                MV.getRegistros().mostrarRegistros();
                 
             }
 
@@ -176,7 +178,7 @@ public class Main {
         int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); //TODO
         int byteLeido;
         while (ptrCS < ptrCS + MV.getTabla().getSegmento("CS").getTamanio() && (byteLeido = fis.read()) != -1) {
-            MV.getMemoria().cargarByteAMemoria((byte) byteLeido, ptrCS);
+            MV.getMemoria().cargarByte((byte)byteLeido, ptrCS);
             ptrCS++;
         }
     }
@@ -261,6 +263,8 @@ public class Main {
             System.out.println("ERROR: Ejecucion interrumpida por caida de segmento del IP");
         }
     }
+    
+    
     public static String formatoBinario(int valor) {
         String binario = String.format("%32s", Integer.toBinaryString(valor)).replace(' ', '0');
         return binario.replaceAll("(.{8})(?=.)", "$1 ");

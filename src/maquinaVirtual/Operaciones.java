@@ -312,15 +312,18 @@ public class Operaciones {
 	}
 	
 	public void PUSH(byte tipoOpA, int opA) {
-		registros.setSP(registros.getSP()+4);
+		registros.setSP(registros.getSP()-4);
 		if(registros.getSP()<registros.getSS()) {
 			throw new IndexOutOfBoundsException("Stack Overflow");
 		}
 		int val = obtenerValorOperando(tipoOpA,opA);
-		memoria.escribirEnPila(val,registros.getSP());
+
+		System.out.println(memoria.getDireccionFisica(registros.getSP())+"esta"+Integer.toHexString(val));
+		memoria.escribirOperando(registros.getSP(),val);
 	}
 
 	public void POP(byte tipoOpA, int opA) {}
+	public void CALL(byte tipoOpA, int opA) {}
 	
 	public void SYS(byte tipoOpA, int opA) {
 		//System.out.println("entro al sys");

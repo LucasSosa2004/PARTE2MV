@@ -8,8 +8,9 @@ public class Registros {
 	private HashMap<String, Integer> registros = new HashMap<String, Integer>();
 	private MemoriaBase memoria;
 
-	public Registros() {
+	public Registros(HeaderMV header, TablaDescripSegmentosV2 tabla) {
 		this.registros = new HashMap<String,Integer>();
+		cargarRegistrosV2(header, tabla);
 	}
 	
 	public Registros(MemoriaBase memoria) {
