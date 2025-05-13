@@ -15,7 +15,7 @@ public class UnidadAritmeticoLogica {
     }
     
 
-public int ejecutarInstruccion(byte primerByte) {
+    public int ejecutarInstruccion(byte primerByte) {
     	
         byte codOperacion = (byte) (primerByte & 0x1F);
         int bytesYaLeidosInstruccion = 1;  
