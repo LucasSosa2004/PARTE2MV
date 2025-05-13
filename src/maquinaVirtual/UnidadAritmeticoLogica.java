@@ -3,11 +3,11 @@ package maquinaVirtual;
 public class UnidadAritmeticoLogica {
 	
     private Registros registros;
-    private Memoria memoria;
+    private MemoriaBase memoria;
     private Operaciones operaciones;
     private final boolean testMode;
     
-    public UnidadAritmeticoLogica(Registros registros, Memoria memoria, boolean testMode) {
+    public UnidadAritmeticoLogica(Registros registros, MemoriaBase memoria, boolean testMode) {
         this.registros = registros;
         this.memoria = memoria;
         this.operaciones = new Operaciones(memoria, registros);
@@ -139,6 +139,8 @@ public int ejecutarInstruccion(byte primerByte) {
             case 6: operaciones.JNP(tipoOp, valorOp); break;
             case 7: operaciones.JNN(tipoOp, valorOp); break;
             case 8: operaciones.NOT(tipoOp, valorOp); break;
+            case 11: operaciones.PUSH(tipoOp, valorOp);break;
+            case 12: operaciones.POP(tipoOp,valorOp); break;
             default: break;
         }
     }

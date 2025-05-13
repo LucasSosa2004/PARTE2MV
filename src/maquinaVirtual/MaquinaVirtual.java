@@ -4,7 +4,7 @@ import java.util.List;
 
 public class MaquinaVirtual {
 
-    private Memoria memoria;
+    private MemoriaBase memoria;
     private Registros registros;
     private UnidadAritmeticoLogica unidadAritmeticoLogica;
     private DissasemblerAux dissasemblerAux;
@@ -22,16 +22,17 @@ public class MaquinaVirtual {
     
     //v2 
     //MaquinaVirtual(header, parametrosPrograma, tamMemoria);
+    
     public MaquinaVirtual(HeaderMV header, List<String> parametros,  int tamMemoria, boolean testMode) {
-    	this.memoriaV2 = new MemoriaV2(header,parametros, tamMemoria);
     	this.tablaV2 = new TablaDescripSegmentosV2();
+    	this.memoria = new MemoriaV2(header,parametros, tamMemoria,tablaV2);
     	this.registros = new Registros();
         this.unidadAritmeticoLogica = new UnidadAritmeticoLogica(registros, memoria, testMode);
         this.dissasemblerAux = new DissasemblerAux(registros, memoria);
     }
 
 
-    public Memoria getMemoria() {
+    public MemoriaBase getMemoria() {
         return this.memoria;
     }
     public Registros getRegistros() {
@@ -49,9 +50,6 @@ public class MaquinaVirtual {
     	return this.tablaV2;
     }
     
-    public MemoriaV2 getMemoriaV2() {
-		return memoriaV2;
-	}
 
 	public boolean isJumpEjecutado() {
         return unidadAritmeticoLogica.isJumpEjecutado();

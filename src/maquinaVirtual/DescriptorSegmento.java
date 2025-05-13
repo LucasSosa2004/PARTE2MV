@@ -49,6 +49,12 @@ public class DescriptorSegmento {
 		this.limite= limite;
 	}
 
+	@Override
+	public String toString() {
+		return "DescriptorSegmento [nombre=" + nombre + ", base=" + base + ", limite=" + limite + ", tamanio=" + tamanio
+				+ "]";
+	}
+
 		
 
 }

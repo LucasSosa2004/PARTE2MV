@@ -6,10 +6,10 @@ import java.util.List;
 
 
 public class TablaDescripSegmentosV2 {
-    private final List<DescriptorSegmento> tabla;
+    private final ArrayList<DescriptorSegmento> tabla;
 
     public TablaDescripSegmentosV2() {
-        this.tabla = new ArrayList<>();
+        this.tabla = new ArrayList<DescriptorSegmento>();
     }
 
 

@@ -50,6 +50,7 @@ public class Memoria implements MemoriaBase {
 	     return memoria[direccionFisica];
 	 }
 	 
+	 @Override
 	 public byte leerPrimerByte(int dirLogicaIP) {
 		int dirFisicaIP = getDireccionFisica(dirLogicaIP); 
 		return leerByte(dirFisicaIP);
@@ -93,7 +94,7 @@ public class Memoria implements MemoriaBase {
 	    memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
 	}
 	
-	public static int agregarOffset(int direccionLogica, int offsetAdicional) {
+	public int agregarOffset(int direccionLogica, int offsetAdicional) {
 	    int offset = (direccionLogica & 0xFFFF) + offsetAdicional; // Extraer solo el offset (los 16 bits bajos)
 	    offset &= 0xFFFF; // Asegurarse de que no se pase de 16 bits
 	    int segmento = direccionLogica & 0xFFFF0000; // Conservar el segmento (los 16 bits altos)
@@ -104,4 +105,12 @@ public class Memoria implements MemoriaBase {
         return leerByte(getDireccionFisica(direccionLogica));
     }
 
+
+	@Override
+	public void escribirEnPila(int valor, int direccionLogica) {
+		throw new IllegalArgumentException("Version 1 no escribe pila");
+	}
+    public int leerPila(int direccionLogica) {
+    	throw new IllegalArgumentException("Version 1 no lee pila");
+    }
 }

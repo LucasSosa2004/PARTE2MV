@@ -6,13 +6,13 @@ import java.util.HashMap;
 public class Registros {
 
 	private HashMap<String, Integer> registros = new HashMap<String, Integer>();
-	private Memoria memoria;
+	private MemoriaBase memoria;
 
 	public Registros() {
 		this.registros = new HashMap<String,Integer>();
 	}
 	
-	public Registros(Memoria memoria) {
+	public Registros(MemoriaBase memoria) {
 		this.registros.put("CS",0x0);
 		this.registros.put("DS",0x00010000); //pos de DS en TablaDS
 		this.registros.put("IP", 0x0);
@@ -61,7 +61,12 @@ public class Registros {
         switch (codigoRegistro) {
             case 0:  return "CS";
             case 1:  return "DS";
+            case 2:  return "ES";
+            case 3:  return "SS";
+            case 4:  return "KS";
             case 5:  return "IP";
+            case 6:  return "SP";
+            case 7:  return "BP";
             case 8:  return "CC";
             case 9:  return "AC";
             case 10: return "EAX";
@@ -163,6 +168,8 @@ public class Registros {
     
     //Getters y setters
     
+    
+    
     public int getCS() {
         return getRegistro("CS");
     }
@@ -171,6 +178,7 @@ public class Registros {
         setRegistro("CS", nuevoCS);
     }
 
+    
     public int getDS() {
         return getRegistro("DS");
     }
@@ -179,12 +187,53 @@ public class Registros {
         setRegistro("DS", nuevoDS);
     }
 
+    public int getES() {
+        return getRegistro("ES");
+    }
+
+    public void setES(int nuevoES) {
+        setRegistro("ES", nuevoES);
+    }
+
+    public int getSS() {
+        return getRegistro("SS");
+    }
+
+    public void setSS(int nuevoSS) {
+        setRegistro("SS", nuevoSS);
+    }
+
+    public int getKS() {
+        return getRegistro("KS");
+    }
+
+    public void setKS(int nuevoKS) {
+        setRegistro("KS", nuevoKS);
+    }
+
+
     public int getIP() {
         return getRegistro("IP");
     }
 
     public void setIP(int nuevoIP) {
         setRegistro("IP", nuevoIP);
+    }
+
+    public int getSP() {
+        return getRegistro("SP");
+    }
+
+    public void setSP(int nuevoSP) {
+        setRegistro("SP", nuevoSP);
+    }
+
+    public int getBP() {
+        return getRegistro("BP");
+    }
+
+    public void setBP(int nuevoBP) {
+        setRegistro("BP", nuevoBP);
     }
 
     public int getCC() {
@@ -253,8 +302,12 @@ public class Registros {
     
     public void mostrarRegistros() {
 		 for (HashMap.Entry<String, Integer> entrada : registros.entrySet()) {
-	         System.out.println(entrada.getKey() + ": " +  Integer.toBinaryString(entrada.getValue()));
+	         System.out.println(entrada.getKey() + ": " +  formatoBinario(entrada.getValue()));
 	     }
+    }
+    public static String formatoBinario(int valor) {
+        String binario = String.format("%32s", Integer.toBinaryString(valor)).replace(' ', '0');
+        return binario.replaceAll("(.{8})(?=.)", "$1 ");
     }
     
 	

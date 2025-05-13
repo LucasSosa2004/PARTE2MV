@@ -14,10 +14,9 @@ public class MemoriaV2 implements MemoriaBase {
     private final Map<String, Integer> tamanios = new HashMap<>();
     private final TablaDescripSegmentosV2 tabla;
 
-    public MemoriaV2(HeaderMV header, List<String> parametros, int tamanoMemoria) {
+    public MemoriaV2(HeaderMV header, List<String> parametros, int tamanoMemoria, TablaDescripSegmentosV2 tabla) {
         this.memoria = new byte[tamanoMemoria];
-        this.tabla = new TablaDescripSegmentosV2();
-
+        this.tabla = tabla;
         int offset = 0;
         if (!parametros.isEmpty()){
         	cargarParametros(parametros,0); // agrega el ParamSegment a la Tabla
@@ -130,7 +129,8 @@ public class MemoriaV2 implements MemoriaBase {
             memoria[posicionActual++] = (byte) (offsetStr & 0xFF);
         }
 
-        getTabla().agregarSegmento("PS", (short)0, (short)(posicionActual + offset));
+        tabla.agregarSegmento("PS", (short)0, (short)(posicionActual + offset));
+        System.out.println(getTabla().getSegmento(0).toString());
         return posicionActual - offset;
     }
 
@@ -166,6 +166,19 @@ public class MemoriaV2 implements MemoriaBase {
 		return leerByte(dirFisicaIP);
 	 }
 
+    public void escribirEnPila(int valor, int direccionLogica) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	memoria[direccionFisica] = (byte)(valor >> 24);
+    	memoria[direccionFisica - 1] = (byte) (valor >> 16);
+    	memoria[direccionFisica - 2] = (byte) (valor >> 8);
+    	memoria[direccionFisica - 3] = (byte) valor;
+    }
+    
+    public int leerPila(int direccionLogica) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	int valor = 0;
+    	return valor;
+    }
     @Override
     public int getDireccionFisica(int direccionLogica) {
         short segmento = (short) (direccionLogica >> 16);
@@ -174,8 +187,13 @@ public class MemoriaV2 implements MemoriaBase {
         return base + offset;
     }
     
-    
-    
+    @Override
+    public int agregarOffset(int direccionLogica, int offsetAdicional) {
+	    int offset = (direccionLogica & 0xFFFF) + offsetAdicional; // Extraer solo el offset (los 16 bits bajos)
+	    offset &= 0xFFFF; // Asegurarse de que no se pase de 16 bits
+	    int segmento = direccionLogica & 0xFFFF0000; // Conservar el segmento (los 16 bits altos)
+	    return segmento | offset;
+	}
 
     @Override
     public void cargarByteAMemoria(byte byteLeido, int posicion) {

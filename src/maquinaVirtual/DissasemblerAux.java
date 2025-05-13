@@ -3,9 +3,9 @@ package maquinaVirtual;
 public class DissasemblerAux {
 
     private Registros registros;
-    private Memoria memoria;
+    private MemoriaBase memoria;
     
-    public DissasemblerAux(Registros registros, Memoria memoria) {
+    public DissasemblerAux(Registros registros, MemoriaBase memoria) {
         this.registros = registros;
         this.memoria = memoria;
     }

@@ -11,11 +11,11 @@ public class Operaciones {
 	private static final int NEGATIVO = 0x80000000;  // bit 32 = Negativo
 	private static final int CERO = 0x40000000;  // bit 31 = Cero
 
-    private final Memoria memoria;
+    private final MemoriaBase memoria;
     private final Registros registros;
     private boolean jumpEjecutado; 
 
-    public Operaciones(Memoria memoria, Registros registros) {
+    public Operaciones(MemoriaBase memoria, Registros registros) {
         this.memoria = memoria;
         this.registros = registros;
         this.jumpEjecutado = false;
@@ -290,6 +290,7 @@ public class Operaciones {
 	    	this.setJumpEjecutado(false);
 	    }
 	}
+	
     
 	public void NOT(byte tipoOpA, int opA) {
 	    // 1) Lees el operando
@@ -310,7 +311,17 @@ public class Operaciones {
 	    registros.setCC(cc);
 	}
 	
+	public void PUSH(byte tipoOpA, int opA) {
+		registros.setSP(registros.getSP()+4);
+		if(registros.getSP()<registros.getSS()) {
+			throw new IndexOutOfBoundsException("Stack Overflow");
+		}
+		int val = obtenerValorOperando(tipoOpA,opA);
+		memoria.escribirEnPila(val,registros.getSP());
+	}
 
+	public void POP(byte tipoOpA, int opA) {}
+	
 	public void SYS(byte tipoOpA, int opA) {
 		//System.out.println("entro al sys");
 		

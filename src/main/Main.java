@@ -1,10 +1,12 @@
 package main;
 
 import java.io.FileInputStream;
+
 import maquinaVirtual.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 import maquinaVirtual.HeaderMV;
 import maquinaVirtual.MaquinaVirtual;
@@ -65,13 +67,12 @@ public class Main {
             } else if (header.getVersion() == 2) {
                 int tamMemoria = memoriaKiB * 1024;
                 MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria, false); // usa MemoriaV2 internamente
-                MV.getMemoriaV2().printPosiciones(0, 20);
-                TablaDescripSegmentosV2 tabla = MV.getTabla();
-                tabla.setTabla(header);
                 //cargarSegmentosV2(fis, MV, header);
-                MV.getRegistros().cargarRegistrosV2(header, tabla);
+                MV.getRegistros().cargarRegistrosV2(header, MV.getTabla());
                 MV.getRegistros().mostrarRegistros();
                 MV.getTabla().mostrarTabla();
+                cargarCodigo(fis,MV,header.getTamanoCS());
+                
                 //inicializarRegistrosV2(MV, header);
             } else {
                 System.err.println("Version de VMX no soportada.");
@@ -169,15 +170,7 @@ public class Main {
             bytesLeidos++;
         }
     }
-    
-    private static void cargarCodigoV2(FileInputStream fis, MaquinaVirtual MV, int tamanoCodigo) throws IOException { //en V2 se llama con el tamano del CS
-        int bytesLeidos = 0;
-        int byteLeido;
-        while (bytesLeidos < tamanoCodigo && (byteLeido = fis.read()) != -1) {
-            MV.getMemoriaV2().cargarByteAMemoria((byte) byteLeido, bytesLeidos);
-            bytesLeidos++;
-        }
-    }
+   
     
     
     private static int mascara2bytes(byte pri, byte seg) {
@@ -250,7 +243,8 @@ public class Main {
         boolean IPcayoSegm = false;
         while (!IPcayoSegm && bytesInstruccion != -1) {
             int IP = MV.getRegistros().getIP();
-            byte primerByte = MV.getMemoriaV2().leerPrimerByte(IP);
+            System.out.println(formatoBinario(IP));
+            byte primerByte = MV.getMemoria().leerPrimerByte(IP);
             bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
             IPcayoSegm = MV.caidaSegmentoIP();
         }
@@ -258,6 +252,9 @@ public class Main {
             System.out.println("ERROR: Ejecucion interrumpida por caida de segmento del IP");
         }
     }
-    
+    public static String formatoBinario(int valor) {
+        String binario = String.format("%32s", Integer.toBinaryString(valor)).replace(' ', '0');
+        return binario.replaceAll("(.{8})(?=.)", "$1 ");
+    }
     
 }
