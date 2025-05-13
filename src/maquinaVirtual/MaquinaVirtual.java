@@ -70,5 +70,6 @@ public class MaquinaVirtual {
         return IPdirFisica + 1 > DSdirFisica;
     }
 
-
+    
+    
 }

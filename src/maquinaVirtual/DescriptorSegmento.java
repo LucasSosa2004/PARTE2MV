@@ -14,6 +14,7 @@ public class DescriptorSegmento {
 		this.base = base;
 		this.limite = limite;
 		this.nombre = nombre;
+		this.tamanio = limite - base;
 	}
 
 	

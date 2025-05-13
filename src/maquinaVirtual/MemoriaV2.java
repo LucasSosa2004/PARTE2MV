@@ -21,6 +21,7 @@ public class MemoriaV2 implements MemoriaBase {
         if (!parametros.isEmpty()){
         	cargarParametros(parametros,0); // agrega el ParamSegment a la Tabla
         }
+        
         tabla.setTabla(header);
         
         
@@ -161,11 +162,12 @@ public class MemoriaV2 implements MemoriaBase {
     	return tabla;
     }
  
-    public byte leerPrimerByte(int dirLogicaIP) {
+
+    @Override
+	 public byte leerPrimerByte(int dirLogicaIP) {
 		int dirFisicaIP = getDireccionFisica(dirLogicaIP); 
 		return leerByte(dirFisicaIP);
 	 }
-
     public void escribirEnPila(int valor, int direccionLogica) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
     	memoria[direccionFisica] = (byte)(valor >> 24);
@@ -200,6 +202,7 @@ public class MemoriaV2 implements MemoriaBase {
         memoria[posicion] = byteLeido;
     }
 
+    
     @Override
     public byte leerByte(int direccionFisica) {
         return memoria[direccionFisica];
@@ -237,5 +240,11 @@ public class MemoriaV2 implements MemoriaBase {
         memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
         memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
         memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
+    }
+    
+    public void imprimirMemoria(int direccionLogica, int offset) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	for(int i=direccionFisica; i<direccionFisica + offset;i++)
+    		System.out.println(i + ": "+ Integer.toHexString(memoria[i]));
     }
 }

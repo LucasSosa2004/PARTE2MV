@@ -67,11 +67,13 @@ public class Main {
             } else if (header.getVersion() == 2) {
                 int tamMemoria = memoriaKiB * 1024;
                 MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria, false); // usa MemoriaV2 internamente
-                //cargarSegmentosV2(fis, MV, header);
+                //cargarSegmentosV2(fis, MV, header);                
                 MV.getRegistros().cargarRegistrosV2(header, MV.getTabla());
+                cargarCodigo(fis,MV);
+
                 MV.getRegistros().mostrarRegistros();
                 MV.getTabla().mostrarTabla();
-                cargarCodigo(fis,MV,header.getTamanoCS());
+                MV.getMemoria().imprimirMemoria(0,30);
                 
                 //inicializarRegistrosV2(MV, header);
             } else {
@@ -163,19 +165,27 @@ public class Main {
     }
     
     private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV, int tamanoCodigo) throws IOException { //en V2 se llama con el tamano del CS
-        int bytesLeidos = 0;
+        int bytesLeidos = 0; //TODO
         int byteLeido;
         while (bytesLeidos < tamanoCodigo && (byteLeido = fis.read()) != -1) {
             MV.getMemoria().cargarByteAMemoria((byte) byteLeido, bytesLeidos);
             bytesLeidos++;
         }
     }
+    private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV) throws IOException { //en V2 se llama con el tamano del CS
+        int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); //TODO
+        int byteLeido;
+        while (ptrCS < ptrCS + MV.getTabla().getSegmento("CS").getTamanio() && (byteLeido = fis.read()) != -1) {
+            MV.getMemoria().cargarByteAMemoria((byte) byteLeido, ptrCS);
+            ptrCS++;
+        }
+    }
    
-    
     
     private static int mascara2bytes(byte pri, byte seg) {
     	return ((pri & 0xFF) << 8) | (seg & 0xFF);    	
     }
+    
     /*
     private static void inicializarRegistros(MaquinaVirtual MV) {
         int CS = MV.getRegistros().getCS();
@@ -243,7 +253,6 @@ public class Main {
         boolean IPcayoSegm = false;
         while (!IPcayoSegm && bytesInstruccion != -1) {
             int IP = MV.getRegistros().getIP();
-            System.out.println(formatoBinario(IP));
             byte primerByte = MV.getMemoria().leerPrimerByte(IP);
             bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
             IPcayoSegm = MV.caidaSegmentoIP();

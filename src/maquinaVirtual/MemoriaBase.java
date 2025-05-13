@@ -17,4 +17,5 @@ public interface MemoriaBase {
 	    byte leerPrimerByte(int dirLogicaIP);
 	    void escribirEnPila(int valor, int direccionLogica);
 	    int leerPila(int direccionLogica);
+	    public void imprimirMemoria(int direccionLogica, int offset);
 }

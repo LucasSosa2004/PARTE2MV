@@ -73,11 +73,9 @@ public class TablaDescripSegmentosV2 {
 	}
     
     public int inicializarSP() {	
-    	DescriptorSegmento SS = getSegmento("SS");
-    	if(SS == null)
-    		return -1;
-    	else
-    		return getIndice("SS") + SS.getTamanio();
+    	int SS = getIndice("SS");
+    	int offset = getSegmento("SS").getTamanio();
+    	return (SS << 16) | offset;
     }
     
     
