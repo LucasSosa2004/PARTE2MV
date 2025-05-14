@@ -76,7 +76,7 @@ public class TablaDescripSegmentosV2 {
     public int inicializarSP() {	
     	int SS = getIndice("SS");
     	int offset = getSegmento("SS").getTamanio();
-    	return (SS << 16) | offset;
+    	return ((SS << 16) | offset) + 1;
     }
     
     
@@ -105,6 +105,29 @@ public class TablaDescripSegmentosV2 {
     public int getCantidadSegmentos() {
         return tabla.size();
     }
+    
+    
+    
+    public String getSegmentoDirFisica(int direccionFisica) {
+        int i = 0;
+        boolean encontrado = false;
+
+        while (i < tabla.size() && !encontrado) {
+            DescriptorSegmento seg = tabla.get(i);
+            if (direccionFisica >= seg.getBase() && direccionFisica < seg.getBase() + seg.getTamanio() + 1) {
+                encontrado = true;
+            } else {
+                i++;
+            }
+        }
+
+        if (encontrado) {
+            return tabla.get(i).getNombre();
+        } else {
+            return "Sin segmento"; // No se encontró ningún segmento
+        }
+    }
+
 
 
 } 

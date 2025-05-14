@@ -91,8 +91,8 @@ public class Main {
                 ejecutarDisassembler(MV, header);
             } else {
                 ejecutarPrograma(MV);
-                MV.getMemoria().imprimirMemoria(110,10);
-                MV.getMemoria().imprimirMemoria(175,10);
+
+                MV.getMemoria().imprimirMemoria(155,30);
                 MV.getRegistros().mostrarRegistros();
                 
             }

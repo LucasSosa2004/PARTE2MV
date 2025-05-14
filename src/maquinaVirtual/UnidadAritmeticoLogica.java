@@ -188,9 +188,9 @@ public class UnidadAritmeticoLogica {
 			argv = argc + 1;
 		}
 		
-		ejecutarOperacionUnOperando(PUSH,inmediato,argc);
-		ejecutarOperacionUnOperando(PUSH,inmediato,argv);
-		ejecutarOperacionUnOperando(PUSH,inmediato,-1);
+		operaciones.PUSH(inmediato, argv);
+		operaciones.PUSH(inmediato, argc);
+		operaciones.PUSH(inmediato, -1);
 	}
 
 }

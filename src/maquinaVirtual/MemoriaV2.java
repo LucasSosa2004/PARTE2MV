@@ -254,6 +254,6 @@ public class MemoriaV2 implements MemoriaBase {
     public void imprimirMemoria(int direccionLogica, int offset) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
     	for(int i=direccionFisica; i<direccionFisica + offset;i++)
-    		System.out.println(i + ": "+ Integer.toHexString(memoria[i] & 0xFF));
+    		System.out.println(tabla.getSegmentoDirFisica(i) + ": " +i + ": "+ Integer.toHexString(memoria[i] & 0xFF));
     }
 }
