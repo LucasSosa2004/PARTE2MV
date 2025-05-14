@@ -177,7 +177,7 @@ public class MemoriaV2 implements MemoriaBase {
     	
     	return valor;
     }
-    
+
 
     @Override
 	 public byte leerPrimerByte(int dirLogicaIP) {

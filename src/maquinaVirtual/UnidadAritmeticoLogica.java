@@ -1,5 +1,7 @@
 package maquinaVirtual;
 
+import java.util.List;
+
 public class UnidadAritmeticoLogica {
 	
     private Registros registros;
@@ -176,6 +178,20 @@ public class UnidadAritmeticoLogica {
 		operaciones.setJumpEjecutado(jumpEjecutado);
 	}
 
+	public void cargarMain(List<String> parametros) {
+		byte PUSH = 11;
+		byte inmediato = 2;
+		int argc=0,argv=-1;
+		
+		if(!(parametros.isEmpty())) {
+			argc = parametros.size();
+			argv = argc + 1;
+		}
+		
+		ejecutarOperacionUnOperando(PUSH,inmediato,argc);
+		ejecutarOperacionUnOperando(PUSH,inmediato,argv);
+		ejecutarOperacionUnOperando(PUSH,inmediato,-1);
+	}
 
 }
 
