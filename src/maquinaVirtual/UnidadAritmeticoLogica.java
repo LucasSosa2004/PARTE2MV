@@ -185,7 +185,7 @@ public class UnidadAritmeticoLogica {
 		
 		if(!(parametros.isEmpty())) {
 			argc = parametros.size();
-			argv = argc + 1;
+			argv = 0;
 		}
 		
 		operaciones.PUSH(inmediato, argv);
