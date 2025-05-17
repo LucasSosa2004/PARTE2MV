@@ -15,6 +15,7 @@ public class MemoriaV2 implements MemoriaBase {
     private final TablaDescripSegmentosV2 tabla;
 
     public MemoriaV2(HeaderMV header, List<String> parametros, int tamanoMemoria, TablaDescripSegmentosV2 tabla) {
+    	chequearMemoria(tamanoMemoria,header);
         this.memoria = new byte[tamanoMemoria];
         this.tabla = tabla;
         int offset = 0;
@@ -108,6 +109,15 @@ public class MemoriaV2 implements MemoriaBase {
         memoria.tabla.agregarSegmento("PS", 0, posActual + offset);
     }*/
      
+    private void chequearMemoria(int tamanoMemoria, HeaderMV header) {
+    	int tot=0;
+    	for(DescriptorSegmento seg : header.getSegmentos()) {
+    		tot += seg.getTamanio();    		
+    	}
+    	if(tot>tamanoMemoria)
+    		throw new IllegalStateException("Memoria insuficiente");
+    }
+    
     private int cargarParametros(List<String> parametros, int offset) {
         int inicioStrings = offset;
         List<Integer> offsets = new ArrayList<>();
@@ -245,10 +255,16 @@ public class MemoriaV2 implements MemoriaBase {
     @Override
     public void escribirOperando(int direccionLogica, int valor) {
         int direccionFisica = getDireccionFisica(direccionLogica);
+        int tamanio = valor & 0b11;
+        tamanio = 4 - tamanio; 
+        for(int i=0; i<tamanio;i++) {
+        	memoria[direccionFisica + tamanio-i-1] = (byte) ((valor >> i*8) & 0xFF);
+        }
+        /*
         memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
         memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
         memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
-        memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
+        memoria[direccionFisica + 3] = (byte) (valor & 0xFF);*/
     }
     
     public void imprimirMemoria(int direccionLogica, int offset) {

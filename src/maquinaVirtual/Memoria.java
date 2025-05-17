@@ -75,7 +75,7 @@ public class Memoria implements MemoriaBase {
 	 
 	public int leerMemoria(int direccionLogica, int cantidadBytes) {
 	    int direccionFisica = getDireccionFisica(direccionLogica);
-
+	    cantidadBytes = 4; //por defecto en v1
 	    int valor = 0;
 	    for (int i = 0; i < cantidadBytes; i++) {
 	        valor = (valor << 8) | (memoria[direccionFisica + i] & 0xFF);

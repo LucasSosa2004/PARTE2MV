@@ -492,7 +492,9 @@ public class Operaciones {
         
             	int offsetAdicional = operando >> 8 & 0xFF;
             	int dirLogicaMasOffset = (dirLogicaEnRegistro & 0xFFFF0000) | (((dirLogicaEnRegistro & 0xFFFF) + offsetAdicional) & 0xFFFF);
-                return memoria.leerMemoria(dirLogicaMasOffset, 4); //porque se leen 4 bytes siempre
+            	int cantBytes = operando & 0b11;
+            	cantBytes = 4 - cantBytes;
+                return memoria.leerMemoria(dirLogicaMasOffset, cantBytes); //si es v1 cantBytes se convierte en 4
             default: return 0;
         }
     }
@@ -511,7 +513,7 @@ public class Operaciones {
                 int offsetExtra = operandoDestino >> 8 & 0xFF;
 
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
-                memoria.escribirOperando(dirLogicaFinal, valor); // por defecto 4 bytes
+                memoria.escribirOperando(dirLogicaFinal, valor); 
                 cantBytesOperacion = 4;
                 break;
             default:
