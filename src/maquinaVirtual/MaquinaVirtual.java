@@ -22,15 +22,27 @@ public class MaquinaVirtual {
     
     //v2 
     //MaquinaVirtual(header, parametrosPrograma, tamMemoria);
-    
-    public MaquinaVirtual(HeaderMV header, List<String> parametros,  int tamMemoria, boolean testMode) {
+    public MaquinaVirtual(List<String> parametros,  int tamMemoria, Archivos archivos, boolean testMode) {
     	this.tablaV2 = new TablaDescripSegmentosV2();
-    	this.memoria = new MemoriaV2(header,parametros, tamMemoria,tablaV2);
-    	this.registros = new Registros(header,tablaV2);
-        this.unidadAritmeticoLogica = new UnidadAritmeticoLogica(registros, memoria, testMode);
+    	this.memoria = new MemoriaV2(parametros, tamMemoria,tablaV2);
+    	this.registros = new Registros(tablaV2);
+    	this.unidadAritmeticoLogica = new UnidadAritmeticoLogica(registros, memoria, tablaV2, archivos, testMode);
+    	this.dissasemblerAux = new DissasemblerAux(registros, memoria);
+    }
+    
+    public MaquinaVirtual(HeaderMV header, List<String> parametros,  int tamMemoria, Archivos archivos, boolean testMode) {
+    	this.tablaV2 = new TablaDescripSegmentosV2(header);
+    	this.memoria = new MemoriaV2(parametros, tamMemoria,tablaV2);
+    	this.tablaV2.setTabla(header);
+    	this.registros = new Registros(tablaV2);
+    	this.registros.cargarRegistrosV2(tablaV2);
+        this.unidadAritmeticoLogica = new UnidadAritmeticoLogica(registros, memoria, tablaV2, archivos, testMode);
         this.unidadAritmeticoLogica.cargarMain(parametros);
         this.dissasemblerAux = new DissasemblerAux(registros, memoria);
     }
+
+    
+    
 
 
     public MemoriaBase getMemoria() {

@@ -8,9 +8,8 @@ public class Registros {
 	private HashMap<String, Integer> registros = new HashMap<String, Integer>();
 	private MemoriaBase memoria;
 
-	public Registros(HeaderMV header, TablaDescripSegmentosV2 tabla) {
+	public Registros(TablaDescripSegmentosV2 tabla) {
 		this.registros = new HashMap<String,Integer>();
-		cargarRegistrosV2(header, tabla);
 	}
 	
 	public Registros(MemoriaBase memoria) {
@@ -29,13 +28,13 @@ public class Registros {
 		this.memoria = memoria;
 	}
 	
-	public void cargarRegistrosV2(HeaderMV header, TablaDescripSegmentosV2 tabla) {
+	public void cargarRegistrosV2(TablaDescripSegmentosV2 tabla) {
 		this.registros.put("CS", tabla.inincializarRegistro("CS"));
 		this.registros.put("DS", tabla.inincializarRegistro("DS"));
 		this.registros.put("ES", tabla.inincializarRegistro("ES"));
 		this.registros.put("SS", tabla.inincializarRegistro("SS"));
 		this.registros.put("KS", tabla.inincializarRegistro("KS"));
-		this.registros.put("IP", tabla.inincializarRegistro("CS") + header.getEntryPoint());
+		this.registros.put("IP", tabla.inincializarRegistro("CS") + tabla.getEntryPoint());
 		this.registros.put("SP", tabla.inicializarSP());
 		this.registros.put("BP", 0x0);
 		this.registros.put("CC", 0x0);
@@ -53,9 +52,17 @@ public class Registros {
     public int getRegistro(String nombre) {
         return registros.getOrDefault(nombre, 0);
     }
+    public int getRegistro(int index) {
+    	String nom = getNombreRegistro(index);
+    	return registros.getOrDefault(nom,0);
+    }
     
     public void setRegistro(String nombre, int valor) {
         registros.put(nombre, valor);
+    }
+    public void addRegistro(int cod, int val) {
+    	String reg = getNombreRegistro(cod);
+    	registros.put(reg, val);
     }
     
     public String getNombreRegistro(int codigoRegistro) {
@@ -81,6 +88,10 @@ public class Registros {
         }
     }
     
+    public void setRegistro(int cod, int val) {
+    	String reg = getNombreRegistro(cod);
+    	registros.replace(reg, val);
+    }
     
     public void modificaIP(int cantBytes) { //Se recibe la cant bytes que se debe avanzar (Se actualiza solo el offset)
         int ip = getIP();

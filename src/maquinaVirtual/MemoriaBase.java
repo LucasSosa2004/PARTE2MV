@@ -18,4 +18,7 @@ public interface MemoriaBase {
 	    public void imprimirMemoria(int direccionLogica, int offset);
 	    public void cargarByte(byte byteACargar, int direccionLogica);
 	    public int leerPila(int direccionLogica);
+	    public byte[] getMemoriaRaw();
+	    public void escribirByte(int direccionLogica,byte valor);
+	    public int getTamano();
 }

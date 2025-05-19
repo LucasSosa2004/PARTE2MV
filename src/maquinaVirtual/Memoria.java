@@ -115,7 +115,17 @@ public class Memoria implements MemoriaBase {
     	for(int i=direccionFisica; i<direccionFisica + offset;i++)
     		System.out.println(i + ": "+ Integer.toHexString(memoria[i]& 0xFF));
     }
+	
+    public byte[] getMemoriaRaw() {
+        return memoria;
+    }
+    public void escribirByte(int direccionFisica,byte valor) {
+    	memoria[direccionFisica] = valor;
+    }
 
+    public int getTamano() {
+    	return kib;
+    }
 
 	
 }

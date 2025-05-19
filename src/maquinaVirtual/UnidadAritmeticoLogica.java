@@ -8,13 +8,23 @@ public class UnidadAritmeticoLogica {
     private MemoriaBase memoria;
     private Operaciones operaciones;
     private final boolean testMode;
+    private boolean breakPointAnterior;
+
+    
     
     public UnidadAritmeticoLogica(Registros registros, MemoriaBase memoria, boolean testMode) {
+    	this.registros = registros;
+    	this.memoria = memoria;
+    	this.operaciones = new Operaciones(memoria, registros);
+    	this.testMode = testMode;  // Bandera de modo disassembler
+    }
+
+    public UnidadAritmeticoLogica(Registros registros, MemoriaBase memoria, TablaDescripSegmentosV2 tabla,Archivos archivos, boolean testMode) {
         this.registros = registros;
         this.memoria = memoria;
-        this.operaciones = new Operaciones(memoria, registros);
+        this.operaciones = new Operaciones(memoria, registros, tabla,archivos);
         this.testMode = testMode;  // Bandera de modo disassembler
-    }
+    }	
     
 
     public int ejecutarInstruccion(byte primerByte) {
@@ -82,7 +92,7 @@ public class UnidadAritmeticoLogica {
         } else { //Si hubo salto, el propio salto modifica el valor del IP
         	this.setJumpEjecutado(false);
         }
-        
+        this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
         if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
         	ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
         }
@@ -178,6 +188,9 @@ public class UnidadAritmeticoLogica {
 		operaciones.setJumpEjecutado(jumpEjecutado);
 	}
 
+	public boolean getBreakPointAnterior() {
+        return breakPointAnterior;
+    }
 	public void cargarMain(List<String> parametros) {
 		byte PUSH = 11;
 		byte inmediato = 2;

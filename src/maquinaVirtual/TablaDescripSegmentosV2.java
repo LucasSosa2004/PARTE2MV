@@ -8,11 +8,16 @@ import java.util.NoSuchElementException;
 
 public class TablaDescripSegmentosV2 {
     private final ArrayList<DescriptorSegmento> tabla;
+    private int entryPoint;
+
+    public TablaDescripSegmentosV2(HeaderMV header) {
+        this.tabla = new ArrayList<DescriptorSegmento>();
+        this.entryPoint = header.getEntryPoint();
+    }
 
     public TablaDescripSegmentosV2() {
         this.tabla = new ArrayList<DescriptorSegmento>();
     }
-
 
     public int getBase(int index) {
         if (index < 0 || index >= tabla.size()) {
@@ -28,7 +33,18 @@ public class TablaDescripSegmentosV2 {
         return tabla.get(index).getLimite();
     }
 
-
+    public String getNombreSegmento(int index) {
+        switch (index) {
+            case 0: return "PS";
+            case 1: return "CS";
+            case 2: return "DS";
+            case 3: return "ES";
+            case 4: return "SS";
+            case 5: return "KS";
+            default: return "???";
+        }
+    }    
+    
     public void agregarSegmento(String segmento, short base, short limite) {
         tabla.add(new DescriptorSegmento(segmento,base,limite));
     }
@@ -59,9 +75,11 @@ public class TablaDescripSegmentosV2 {
     }
     
     public DescriptorSegmento getSegmento(int index) {
-    	return this.tabla.get(index);
+        if (index < 0 || index >= tabla.size()) {
+            return null;
+        }
+        return tabla.get(index);
     }
-    
 
     public int inincializarRegistro(String registro) {
 		DescriptorSegmento segmento = getSegmento(registro);
@@ -106,6 +124,9 @@ public class TablaDescripSegmentosV2 {
         return tabla.size();
     }
     
+    public ArrayList<DescriptorSegmento> getSegmentos(){
+    	return this.tabla;
+    }
     
     
     public String getSegmentoDirFisica(int direccionFisica) {
@@ -128,6 +149,9 @@ public class TablaDescripSegmentosV2 {
         }
     }
 
+    public int getEntryPoint() {
+    	return this.entryPoint;
+    }
 
 
 } 

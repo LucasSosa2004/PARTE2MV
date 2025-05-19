@@ -13,113 +13,30 @@ public class MemoriaV2 implements MemoriaBase {
     private final Map<String, Integer> baseSegmentos = new HashMap<>();
     private final Map<String, Integer> tamanios = new HashMap<>();
     private final TablaDescripSegmentosV2 tabla;
+    private final int tamanoMemoria;
 
-    public MemoriaV2(HeaderMV header, List<String> parametros, int tamanoMemoria, TablaDescripSegmentosV2 tabla) {
-    	chequearMemoria(tamanoMemoria,header);
+    public MemoriaV2(List<String> parametros, int tamanoMemoria, TablaDescripSegmentosV2 tabla) {
         this.memoria = new byte[tamanoMemoria];
         this.tabla = tabla;
+        this.tamanoMemoria = tamanoMemoria;
+        chequearMemoria(tamanoMemoria,tabla);
         int offset = 0;
         if (!parametros.isEmpty()){
         	cargarParametros(parametros,0); // agrega el ParamSegment a la Tabla
         }
-        
-        tabla.setTabla(header);
-        
-        
-        /*lo de abajo se haria en tablaDescrSegv2 (menos cargar el param seg)
-         * 
-        // Param Segment (si hay parametros)
-        if (!parametros.isEmpty()) {
-            int tamanoP = cargarParametros(parametros, offset);
-            baseSegmentos.put("P", offset);
-            tamanios.put("P", tamanoP);
-            tabla.agregarSegmento(offset, tamanoP);
-            offset += tamanoP;
-        }
-
-        // Const Segment (KS)
-        if (header.getTamanoKS() > 0) {
-            baseSegmentos.put("KS", offset);
-            tamanios.put("KS", header.getTamanoKS());
-            tabla.agregarSegmento(offset, header.getTamanoKS());
-            offset += header.getTamanoKS();
-        }
-
-        // Code Segment (CS)
-        if (header.getTamanoCS() > 0) {
-            baseSegmentos.put("CS", offset);
-            tamanios.put("CS", header.getTamanoCS());
-            tabla.agregarSegmento(offset, header.getTamanoCS());
-            offset += header.getTamanoCS();
-        }
-
-        // Data Segment (DS)
-        if (header.getTamanoDS() > 0) {
-            baseSegmentos.put("DS", offset);
-            tamanios.put("DS", header.getTamanoDS());
-            tabla.agregarSegmento(offset, header.getTamanoDS());
-            offset += header.getTamanoDS();
-        }
-
-        // Extra Segment (ES)
-        if (header.getTamanoES() > 0) {
-            baseSegmentos.put("ES", offset);
-            tamanios.put("ES", header.getTamanoES());
-            tabla.agregarSegmento(offset, header.getTamanoES());
-            offset += header.getTamanoES();
-        }
-
-        // Stack Segment (SS)
-        if (header.getTamanoSS() > 0) {
-            baseSegmentos.put("SS", offset);
-            tamanios.put("SS", header.getTamanoSS());
-            tabla.agregarSegmento(offset, header.getTamanoSS());
-            offset += header.getTamanoSS();
-        }*/
     }
-
-    /**
-     * Carga los par�metros del programa en el segmento de par�metros.
-     * Este segmento se ubicar� siempre desde la posici�n 0x00000000.
-     *
-     * @param parametros Lista de strings le�dos desde la consola
-     * @param offset     Posici�n inicial en memoria (debe ser 0)
-     * @return El tama�o total del segmento de par�metros en bytes
-     */
-    
-     //esto lo hizo juani de otra manera 
-    /*
-     public void cargarParametros(List<String> parametros) {
-        List<Integer> punteros;
-        int posActual=0;
-        for(int i=0; i<parametros.size();i++) {
-            char car = parametros.get(i).charAt(posActual); 
-            while(posActual<car){
-                memoria.cargarByteAMemoria((byte) car, posActual); // offset j
-                posActual++;
-            }
-            memoria.cargarByteAMemoria(0, posActual); // \0
-            punteros.add(posActual);
-        }
-        short offset = 0;
-        for(int i : punteros) {
-            memoria.escribirOperando(posActual + offset, i);
-            offset += 4;
-        }
-        memoria.tabla.agregarSegmento("PS", 0, posActual + offset);
-    }*/
      
-    private void chequearMemoria(int tamanoMemoria, HeaderMV header) {
+    private void chequearMemoria(int tamanoMemoria, TablaDescripSegmentosV2 tabla) {
     	int tot=0;
-    	for(DescriptorSegmento seg : header.getSegmentos()) {
+    	for(DescriptorSegmento seg : tabla.getSegmentos()) {
     		tot += seg.getTamanio();    		
     	}
     	if(tot>tamanoMemoria)
     		throw new IllegalStateException("Memoria insuficiente");
     }
     
-    private int cargarParametros(List<String> parametros, int offset) {
-        int inicioStrings = offset;
+    private void cargarParametros(List<String> parametros, int offset) {
+        int inicioStrings = 0;
         List<Integer> offsets = new ArrayList<>();
 
         // 1. Escribir strings con terminador '\0'
@@ -140,9 +57,8 @@ public class MemoriaV2 implements MemoriaBase {
             memoria[posicionActual++] = (byte) (offsetStr & 0xFF);
         }
 
-        tabla.agregarSegmento("PS", (short)0, (short)(posicionActual + offset));
+        tabla.agregarSegmento("PS", (short)0, (short)(posicionActual - 1));
         System.out.println(getTabla().getSegmento(0).toString());
-        return posicionActual - offset;
     }
 
     public void cargarSegmentoDesdeArchivo(String segmento, FileInputStream fis, int longitud) throws IOException {
@@ -173,21 +89,26 @@ public class MemoriaV2 implements MemoriaBase {
     }
  
     public int leerPila(int direccionLogica) {
-    	int direccionFisica = getDireccionFisica(direccionLogica);
-    	
-        if (direccionFisica < tabla.getAnterior("SS").getLimite()) {
+        int direccionFisica = getDireccionFisica(direccionLogica);
+
+
+        if (direccionFisica + 3 > tabla.getSegmento("SS").getLimite()) {
             throw new IndexOutOfBoundsException("Stack Underflow");
         }
-        int valor = 0;    	
-    	valor  = (memoria[direccionFisica++] & 0xFF) << 24;
-    	valor |= (memoria[direccionFisica++] & 0xFF) << 16;
-    	valor |= (memoria[direccionFisica++] & 0xFF) << 8;
-    	valor |= (memoria[direccionFisica++] & 0xFF);
 
-    	
-    	return valor;
+        int valor = 0;
+        valor  = (memoria[direccionFisica--] & 0xFF);
+        valor |= (memoria[direccionFisica--] & 0xFF) << 8;
+        valor |= (memoria[direccionFisica--] & 0xFF) << 16;
+        valor |= (memoria[direccionFisica--] & 0xFF) << 24;
+
+        return valor;
     }
 
+
+    public void escribirByte(int direccionFisica,byte valor) {
+    	memoria[direccionFisica] = valor;
+    }
 
     @Override
 	 public byte leerPrimerByte(int dirLogicaIP) {
@@ -271,5 +192,8 @@ public class MemoriaV2 implements MemoriaBase {
     	int direccionFisica = getDireccionFisica(direccionLogica);
     	for(int i=direccionFisica; i<direccionFisica + offset;i++)
     		System.out.println(tabla.getSegmentoDirFisica(i) + ": " +i + ": "+ Integer.toHexString(memoria[i] & 0xFF));
+    }
+    public int getTamano() {
+    	return this.tamanoMemoria;
     }
 }

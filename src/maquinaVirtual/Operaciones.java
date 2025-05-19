@@ -2,6 +2,7 @@ package maquinaVirtual;
 
 import java.util.Random;
 import java.util.Scanner;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +15,24 @@ public class Operaciones {
     private final MemoriaBase memoria;
     private final Registros registros;
     private boolean jumpEjecutado; 
+    TablaDescripSegmentosV2 tabla;
+    private Archivos archivos;
 
     public Operaciones(MemoriaBase memoria, Registros registros) {
         this.memoria = memoria;
         this.registros = registros;
         this.jumpEjecutado = false;
+        this.tabla = null;
+        this.archivos = null;
     }
-
+    
+    public Operaciones(MemoriaBase memoria, Registros registros, TablaDescripSegmentosV2 tabla,Archivos archivos) {
+    	this.memoria = memoria;
+    	this.registros = registros;
+    	this.tabla = tabla;
+    	this.archivos = archivos;
+    }
+    
     public void ADD(byte tipoOpA, int opA, byte tipoOpB, int opB) {
         int valorA    = obtenerValorOperando(tipoOpA, opA);
         int valorB    = obtenerValorOperando(tipoOpB, opB);
@@ -324,7 +336,7 @@ public class Operaciones {
 
 	public void POP(byte tipoOpA, int opA) {
 		try {
-			int val = memoria.leerPila(registros.getSP());		
+			int val = memoria.leerPila(registros.getSP());	
 			guardarValorEnDestino(tipoOpA,opA,val);
 			registros.setSP(registros.getSP()-4);
 		}
@@ -354,11 +366,13 @@ public class Operaciones {
 
 	    int dirLogicaBase = registros.getRegistro("EDX"); // (ya apunta al DS + offset)
 	    int ECX        = registros.getRegistro("ECX");
+	    int EDX 	   = registros.getRegistro("EDX"); 
+	    int CX	       = ECX & 0xFFFF;		  // CX
 	    int celdas     = ECX & 0xFF;          // CL 
 	    int tamanio    = (ECX >> 8) & 0xFF;   // CH 
 	    int formatoOperacion  = registros.getRegistro("EAX") & 0xFF; //AL (1=hex, 2=bin, 4=oct, resto=dec)
 
-	    //System.out.println("modo de SYS: " + modo);
+	    System.out.println("modo de SYS: " + modo);
 
 	    int cantBytesOperacion = celdas * tamanio;
 	    if (modo == 1) { //Read
@@ -399,13 +413,59 @@ public class Operaciones {
 	        	
 	        	System.out.println("[" + String.format("%04X", dirFisica) + "]: " +salidaFormateada);
 	        }
-	    } 
+	    }	  
+	    else if(modo == 3) {
+	    	Scanner scanner = new Scanner(System.in);
+	    	System.out.println("SYS 3: ");	    	
+	    	String input = scanner.nextLine();
+	    	int maxChars;
+	    	
+	    	if(CX <= -1) {
+	    		maxChars = input.length();
+	    	}
+	    	else {
+	    		maxChars = Math.min(CX, input.length());
+	    	}
+	    	
+	    	for(int i=0; i<maxChars;i++) {
+	    		memoria.escribirByte(EDX + i, (byte)input.charAt(i));
+	    	}
+	    		
+	    }
+	    else if(modo == 4) {
+	    	StringBuilder str = new StringBuilder();
+	    	
+	    	int offset=0;
+	    	while(memoria.leerByteLogica(EDX +offset) != 0) {
+	    		str.append((char)memoria.leerByteLogica(EDX + offset));	
+	    		offset++;
+	    	}
+	    	str.append(0);
+	    	System.out.println(str);
+	    }
+	    else if(modo == 7) {
+	    	clearScreen();
+	    }
+	    else if (modo == 0xF) { //breakpoint
+	    	try {	    		
+	    		if(archivos.tieneVMI()) {
+	    			archivos.guardarArchivoVMI(this.registros, this.memoria, this.tabla);	    			
+	    		}
+	    	}
+	    	catch(IOException e) {
+	    		System.out.println(e);
+	    	}
+	    }
 	    else {
 	        System.err.println("SYS: modo no soportado (" + modo + ")");
 	    }
 	    
 	}
-	
+	private void clearScreen() {
+		for(int i=0;i<50;i++) {
+			System.out.println();
+		}
+	}
 	public static String formarStringSalida(int formatoOperacion, int dato, int tamanioBytes) {
 	    // 0) Calcular cuantos bytes realmente importan:
 	    //    buscamos el primer 1 de los 32 bits; eso define effectiveBytes.

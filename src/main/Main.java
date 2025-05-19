@@ -6,97 +6,118 @@ import maquinaVirtual.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Scanner;
 
 import maquinaVirtual.HeaderMV;
 import maquinaVirtual.MaquinaVirtual;
 
 public class Main {
     public static void main(String[] args) {
-        String archivoVMX = null;
-        String archivoVMI = null;
-        int memoriaKiB = 16; // valor por defecto
+    	int memoriaKiB = 16; // valor por defecto		
         boolean disassemblerMode = false;
         List<String> parametrosPrograma = new ArrayList<>();
+        
+        Archivos archivos = Archivos.desdeArgs(args);
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
 
-            if (arg.endsWith(".vmx")) {
-                archivoVMX = arg;
-            } else if (arg.endsWith(".vmi")) {
-                archivoVMI = arg;
-            } else if (arg.startsWith("m=")) {
+            if (arg.startsWith("m=")) {
                 try {
                     memoriaKiB = Integer.parseInt(arg.substring(2));
                 } catch (NumberFormatException e) {
-                    System.err.println("Error: el valor de memoria no es valido.");
+                    System.err.println("Error: el valor de memoria no es válido.");
                     return;
                 }
+
             } else if (arg.equals("-d")) {
                 disassemblerMode = true;
+
             } else if (arg.equals("-p")) {
                 for (int j = i + 1; j < args.length; j++) {
                     parametrosPrograma.add(args[j]);
                 }
                 break;
-            } else {
-                System.err.println("Advertencia: argumento desconocido '" + arg + "'");
             }
         }
 
-        if (archivoVMX == null && archivoVMI == null) {
+        if (!archivos.tieneVMX() && !archivos.tieneVMI()) {
             System.err.println("Error: se debe especificar al menos un archivo .vmx o .vmi");
             return;
         }
 
         try {
-            FileInputStream fis = new FileInputStream(archivoVMX);
-            HeaderMV header = leerHeader(fis);
-            if (!header.isValido()) {
-                System.err.println("Archivo invalido. Identificador incorrecto: " + header.getIdentificador());
-                fis.close();
-                return;
-            }
+        	
 
             MaquinaVirtual MV;
 
-            if (header.getVersion() == 1) {
-                MV = new MaquinaVirtual(header.getTamanoCodigov1(), false);
-                cargarCodigo(fis, MV, header.getTamanoCodigov1());
-            } else if (header.getVersion() == 2) {
-                int tamMemoria = memoriaKiB * 1024;
-                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria, false); // usa MemoriaV2 internamente
-                //cargarSegmentosV2(fis, MV, header);                
-                //MV.getRegistros().cargarRegistrosV2(header, MV.getTabla());
-                cargarCodigo(fis,MV);
+            if(archivos.tieneVMX()) {
+            	
+            	FileInputStream fis = new FileInputStream(archivos.getVMX());
+            	HeaderMV header = leerHeader(fis);
+            	
+            	if (!header.isValido()) {
+            		System.err.println("Archivo invalido. Identificador incorrecto: " + header.getIdentificador());
+            		fis.close();
+            		return;
+            	}
+            	
+	            if (header.getVersion() == 1) {
+	                MV = new MaquinaVirtual(header.getTamanoCodigov1(), false);
+	                cargarCodigo(fis, MV, header.getTamanoCodigov1());
+	            } else if (header.getVersion() == 2) {
+	                int tamMemoria = memoriaKiB * 1024;
+	                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria,archivos,false); // usa MemoriaV2 internamente
+	                cargarCodigo(fis,MV);
 
-                MV.getRegistros().mostrarRegistros();
-                MV.getTabla().mostrarTabla();
-                MV.getMemoria().imprimirMemoria(0,30);
-                
-                //inicializarRegistrosV2(MV, header);
-            } else {
-                System.err.println("Version de VMX no soportada.");
-                fis.close();
-                return;
+	                MV.getTabla().mostrarTabla();
+	                MV.getRegistros().mostrarRegistros();
+	                MV.getMemoria().imprimirMemoria(0,30);
+	                
+	            } else {
+	                System.err.println("Version de VMX no soportada.");
+	                fis.close();
+	                return;
+	            }
+	            
+	            if(disassemblerMode) {
+	            	int tamanoCodigo = header.getTamanoCodigov1();
+	            	ejecutarDisassembler(MV,tamanoCodigo);
+	            }else {
+	            	if (!archivos.tieneVMI()){
+	            		ejecutarPrograma(MV);
+	            	}
+	            	else{
+	            		ejecutarEnDebug(MV, archivos);
+	            	}
+	            }
+	            	
+	            	
+	            fis.close();
             }
-            fis.close();
+            else { // no vmx pero si vmi
+            	int tamMemoria = memoriaKiB * 1024;
+            	MV = new MaquinaVirtual(parametrosPrograma,tamMemoria,archivos,disassemblerMode);
+            	if (archivos.tieneVMI()) {
+                    archivos.cargarEnMV(MV); 
+                    MV.getUnidadAritmeticoLogica().cargarMain(parametrosPrograma);
 
-            if (archivoVMI != null) {
-                //cargarImagenVMI(archivoVMI, MV);
+                    MV.getTabla().mostrarTabla(); 
+                    MV.getRegistros().mostrarRegistros();
+                    MV.getMemoria().imprimirMemoria(0,30);
+                }
+
+                if (disassemblerMode) {
+                	int tamanoCodigo = MV.getTabla().getSegmento("CS").getTamanio();
+            		ejecutarDisassembler(MV, tamanoCodigo);
+                } else {
+                    ejecutarEnDebug(MV,archivos);
+                    
+                }
+
             }
-
-            if (disassemblerMode) {
-                ejecutarDisassembler(MV, header);
-            } else {
-                ejecutarPrograma(MV);
-
-                MV.getMemoria().imprimirMemoria(155,30);
-                MV.getRegistros().mostrarRegistros();
-                
-            }
-
+            
+            
         } catch (Exception e) {
             System.err.println("ERROR: " + e.getMessage());
             e.printStackTrace();
@@ -249,6 +270,18 @@ public class Main {
             }
         }
     } 
+    private static void ejecutarDisassembler(MaquinaVirtual MV, int tamanoCodigo) {
+        int i = 0, bytesInstruccion = 1;
+        while (i < tamanoCodigo && bytesInstruccion != -1) {
+            int IP = MV.getRegistros().getIP();
+            byte primerByte = MV.getMemoria().leerPrimerByte(IP);
+            bytesInstruccion = MV.getDissasemblerAux().decodificarInstruccion(primerByte);
+            if (bytesInstruccion > 0) {
+                MV.getRegistros().modificaIP(bytesInstruccion);
+                i += bytesInstruccion;
+            }
+        }
+    } 
     
     private static void ejecutarPrograma(MaquinaVirtual MV) {
         int bytesInstruccion = 1;
@@ -264,7 +297,60 @@ public class Main {
         }
     }
     
+    private static void ejecutarEnDebug(MaquinaVirtual MV, Archivos archivos) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int bytesInstruccion = 1;
+        boolean IPcayoSegm = false;
+        boolean esperaInput = false;  // arranca ejecutando sin pausar
+        boolean ejecutar = true;
+
+        int IP;
+        byte primerByte;
+
+        System.out.println("debug");
+
+        while (!IPcayoSegm && bytesInstruccion != -1) {
+            ejecutar = true;
+
+            if (esperaInput || MV.getUnidadAritmeticoLogica().getBreakPointAnterior()) {
+                System.out.print(">>> ");
+                String input = sc.nextLine();
+
+                if (input.equals("q")) {
+                    System.out.println("Ejecución finalizada.");
+                    break;
+                } else if (input.isEmpty()) { // Step
+                    esperaInput = true;
+                    archivos.guardarArchivoVMI(MV.getRegistros(), MV.getMemoria(), MV.getTabla());
+                } else if (input.equals("d")) { // Continuar
+                    esperaInput = false;
+                } else {
+                    System.out.println("Enter (step), d (continuar) o q (salir).");
+                    ejecutar = false;
+                }
+            }
+
+            if (ejecutar) {
+                IP = MV.getRegistros().getIP();
+                primerByte = MV.getMemoria().leerPrimerByte(IP);
+                bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
+                IPcayoSegm = MV.caidaSegmentoIP();
+
+                // breakpoint despues de >>d
+                if (!esperaInput && MV.getUnidadAritmeticoLogica().getBreakPointAnterior()) {
+                    esperaInput = true;
+                }
+            }
+        }
+
+        if (IPcayoSegm) {
+            System.out.println("ERROR: Ejecución interrumpida por caída de segmento del IP");
+        }
+    }
+
+
     
+
     public static String formatoBinario(int valor) {
         String binario = String.format("%32s", Integer.toBinaryString(valor)).replace(' ', '0');
         return binario.replaceAll("(.{8})(?=.)", "$1 ");
