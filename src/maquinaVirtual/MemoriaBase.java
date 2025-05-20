@@ -21,4 +21,5 @@ public interface MemoriaBase {
 	    public byte[] getMemoriaRaw();
 	    public void escribirByte(int direccionLogica,byte valor);
 	    public int getTamano();
+	    public void escribirPila(int direccionLogica,int valor);
 }

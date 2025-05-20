@@ -97,11 +97,11 @@ public class MemoriaV2 implements MemoriaBase {
         }
 
         int valor = 0;
-        valor  = (memoria[direccionFisica--] & 0xFF);
-        valor |= (memoria[direccionFisica--] & 0xFF) << 8;
-        valor |= (memoria[direccionFisica--] & 0xFF) << 16;
-        valor |= (memoria[direccionFisica--] & 0xFF) << 24;
-
+        valor  = (memoria[direccionFisica]     & 0xFF) << 24;
+        valor |= (memoria[direccionFisica + 1] & 0xFF) << 16;
+        valor |= (memoria[direccionFisica + 2] & 0xFF) << 8;
+        valor |= (memoria[direccionFisica + 3] & 0xFF);
+        
         return valor;
     }
 
@@ -171,6 +171,14 @@ public class MemoriaV2 implements MemoriaBase {
             valor = (valor << 8) | (memoria[direccionFisica + i] & 0xFF);
         }
         return valor;
+    }
+    
+    public void escribirPila(int direccionLogica,int valor) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+        memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
+        memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
+        memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
+        memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
     }
 
     @Override

@@ -126,6 +126,8 @@ public class Memoria implements MemoriaBase {
     public int getTamano() {
     	return kib;
     }
-
+    public void escribirPila(int direccionLogica,int valor) {
+    	throw new IllegalArgumentException("v1 no tiene pila");
+    }
 	
 }

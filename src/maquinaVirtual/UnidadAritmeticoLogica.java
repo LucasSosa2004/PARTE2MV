@@ -83,22 +83,28 @@ public class UnidadAritmeticoLogica {
             }
             
             bytesYaLeidosInstruccion = -1; //o solo para cuando es ejecucion?
-        } else {
+        } else if(codOperacion == 0x0E){//ret
+        	operaciones.RET();
+        	this.setJumpEjecutado(true);
+        }else {
+        	
         	bytesYaLeidosInstruccion = -1; // instruccion invalida -> el codigo de operacion no existe
         }
-        
-        if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) { 
-            this.registros.modificaIP(bytesYaLeidosInstruccion);                        
-        } else { //Si hubo salto, el propio salto modifica el valor del IP
-        	this.setJumpEjecutado(false);
-        }
-        this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
-        if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
-        	ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
-        }
-        else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
-        	ejecutarOperacionDosOperandos(codOperacion, tipoOpA, valorOpA, tipoOpB, valorOpB);
-        }
+
+        //System.out.println("PILA:"+Integer.toHexString(memoria.leerPila(registros.getSP())));
+    	if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) { 
+    		this.registros.modificaIP(bytesYaLeidosInstruccion);                        
+    	} else { //Si hubo salto, el propio salto modifica el valor del IP
+    		this.setJumpEjecutado(false);
+    	}        	
+    	this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
+    	if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
+    		ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
+    	}
+    	else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
+    		ejecutarOperacionDosOperandos(codOperacion, tipoOpA, valorOpA, tipoOpB, valorOpB);
+    	}
+    
         
         // Si estamos en modo disassembler, imprimimos la instruccion sin ejecutarla.
         if (testMode) {

@@ -331,29 +331,30 @@ public class Operaciones {
 			throw new IndexOutOfBoundsException("Stack Overflow");
 		}
 		int val = obtenerValorOperando(tipoOpA,opA);
-		memoria.escribirOperando(registros.getSP(),val);
+		memoria.escribirPila(registros.getSP(),val);
 	}
 
 	public void POP(byte tipoOpA, int opA) {
 		try {
-			int val = memoria.leerPila(registros.getSP());	
+			int val = memoria.leerPila(registros.getSP());
 			guardarValorEnDestino(tipoOpA,opA,val);
-			registros.setSP(registros.getSP()-4);
+			registros.setSP(registros.getSP()+4);
 		}
 		catch(IndexOutOfBoundsException e) {
 			throw new IndexOutOfBoundsException("Stack Underflow");			
 		}
-
-		
 	}
+	
 	public void CALL(byte tipoOpA, int opA) {
 		byte i=1;//no deja poner cte abajo
-		PUSH(i,registros.getIP());
+		System.out.println("IP en call: "+Integer.toHexString(registros.getIP()));
+		PUSH(i,0x50);
 		JMP(tipoOpA,opA);
 	}
+	
 	public void RET() {
 		byte i=1;
-		POP(i,5); //pop ip
+		POP(i,0x50);
 	}
 	
 	public void SYS(byte tipoOpA, int opA) {
@@ -461,6 +462,7 @@ public class Operaciones {
 	    }
 	    
 	}
+	
 	private void clearScreen() {
 		for(int i=0;i<50;i++) {
 			System.out.println();
@@ -541,6 +543,7 @@ public class Operaciones {
 	    return String.join("  ", salidas);
 	}
 	
+	/*
     private int obtenerValorOperando(byte tipoOp, int operando) {
         switch (tipoOp) {
             case 0b01: return registros.leerSectorRegistro(operando);
@@ -552,12 +555,29 @@ public class Operaciones {
         
             	int offsetAdicional = operando >> 8 & 0xFF;
             	int dirLogicaMasOffset = (dirLogicaEnRegistro & 0xFFFF0000) | (((dirLogicaEnRegistro & 0xFFFF) + offsetAdicional) & 0xFFFF);
-            	int cantBytes = operando & 0b11;
+            	int cantBytes = operando & 0x3;
             	cantBytes = 4 - cantBytes;
                 return memoria.leerMemoria(dirLogicaMasOffset, cantBytes); //si es v1 cantBytes se convierte en 4
             default: return 0;
         }
-    }
+    }*/
+	private int obtenerValorOperando(byte tipoOp, int operando) {
+        switch (tipoOp) {
+            case 0b01: return registros.leerSectorRegistro(operando);
+            case 0b10: return operando;
+            case 0b11:
+            	int codRegistro = operando >> 4 & 0xF;
+            	String nombreReg = this.registros.getNombreRegistro(codRegistro);
+            	int dirLogicaEnRegistro = this.registros.getRegistro(nombreReg);
+        
+            	int offsetAdicional = operando >> 8 & 0xFFFF;
+            	int dirLogicaMasOffset = dirLogicaEnRegistro + offsetAdicional;
+            	int cantBytes = operando & 0x3;
+            	cantBytes = 4 - cantBytes;
+                return memoria.leerMemoria(dirLogicaMasOffset, cantBytes); //si es v1 cantBytes se convierte en 4
+            default: return 0;
+        }
+	}
     
     private void guardarValorEnDestino(byte tipoDestino, int operandoDestino, int valor) {
 

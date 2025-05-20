@@ -72,7 +72,7 @@ public class Main {
 
 	                MV.getTabla().mostrarTabla();
 	                MV.getRegistros().mostrarRegistros();
-	                MV.getMemoria().imprimirMemoria(0,30);
+	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getLimite()-30,32);
 	                
 	            } else {
 	                System.err.println("Version de VMX no soportada.");
@@ -86,6 +86,7 @@ public class Main {
 	            }else {
 	            	if (!archivos.tieneVMI()){
 	            		ejecutarPrograma(MV);
+	            		MV.getRegistros().mostrarRegistros();
 	            	}
 	            	else{
 	            		ejecutarEnDebug(MV, archivos);
@@ -287,7 +288,10 @@ public class Main {
         int bytesInstruccion = 1;
         boolean IPcayoSegm = false;
         while (!IPcayoSegm && bytesInstruccion != -1) {
-            int IP = MV.getRegistros().getIP();
+        	System.out.println("IP: "+Integer.toHexString(MV.getRegistros().getIP()));
+
+    		//MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getLimite()-30,32);
+        	int IP = MV.getRegistros().getIP();
             byte primerByte = MV.getMemoria().leerPrimerByte(IP);
             bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
             IPcayoSegm = MV.caidaSegmentoIP();

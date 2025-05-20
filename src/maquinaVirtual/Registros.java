@@ -143,6 +143,7 @@ public class Registros {
                 throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
         }
         
+        System.out.println("Registro escrito"+ nombreRegistro+ "valor"+ valorCompleto);
         // Actualiza el registro con el nuevo valor.
         setRegistro(nombreRegistro, valorCompleto);
         //System.out.println("valor actualizado del registro CX "+ this.getECX());
