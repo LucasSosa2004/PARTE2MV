@@ -33,7 +33,7 @@ public class Main {
             } else if (arg.equals("-d")) {
                 disassemblerMode = true;
 
-            } else if (arg.equals("-p")) {
+            } else if (arg.equals("-p") && archivos.tieneVMX()) {
                 for (int j = i + 1; j < args.length; j++) {
                     parametrosPrograma.add(args[j]);
                 }
@@ -199,8 +199,9 @@ public class Main {
     private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV) throws IOException { //en V2 se llama con el tamano del CS
         int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); //TODO
         int byteLeido;
-        while (ptrCS < ptrCS + MV.getTabla().getSegmento("CS").getTamanio() && (byteLeido = fis.read()) != -1) {
-            MV.getMemoria().cargarByte((byte)byteLeido, ptrCS);
+        int limite = MV.getTabla().getSegmento("CS").getTamanio(); 
+        while (ptrCS < limite && (byteLeido = fis.read()) != -1) {
+            MV.getMemoria().cargarByteAMemoria((byte)byteLeido, ptrCS);
             ptrCS++;
         }
     }
@@ -288,7 +289,7 @@ public class Main {
         int bytesInstruccion = 1;
         boolean IPcayoSegm = false;
         while (!IPcayoSegm && bytesInstruccion != -1) {
-        	System.out.println("IP: "+Integer.toHexString(MV.getRegistros().getIP()));
+        	//System.out.println("IP: "+Integer.toHexString(MV.getRegistros().getIP()));
 
     		//MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getLimite()-30,32);
         	int IP = MV.getRegistros().getIP();

@@ -17,6 +17,7 @@ public class TablaDescripSegmentosV2 {
 
     public TablaDescripSegmentosV2() {
         this.tabla = new ArrayList<DescriptorSegmento>();
+        this.entryPoint=0;
     }
 
     public int getBase(int index) {

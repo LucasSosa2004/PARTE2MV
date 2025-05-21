@@ -118,7 +118,7 @@ public class MemoriaV2 implements MemoriaBase {
 
     @Override
     public int getDireccionFisica(int direccionLogica) {
-        short segmento = (short) (direccionLogica >> 16);
+        short segmento = (short) (direccionLogica >>> 16);
         short offset = (short) direccionLogica;
         int base = tabla.getBase(segmento);
         return base + offset;
@@ -170,6 +170,12 @@ public class MemoriaV2 implements MemoriaBase {
         for (int i = 0; i < cantidadBytes; i++) {
             valor = (valor << 8) | (memoria[direccionFisica + i] & 0xFF);
         }
+        
+        //extender el signo 
+        if (cantidadBytes < 4) {
+            int shift = (4 - cantidadBytes) * 8;
+            valor = (valor << shift) >> shift;
+        }
         return valor;
     }
     
@@ -184,6 +190,17 @@ public class MemoriaV2 implements MemoriaBase {
     @Override
     public void escribirOperando(int direccionLogica, int valor) {
         int direccionFisica = getDireccionFisica(direccionLogica);
+        //int tamanio = valor & 0b11; esto no va aca
+        //tamanio = 4 - tamanio;
+
+        for (int i = 0; i < 4; i++) {
+            memoria[direccionFisica + i] = (byte) ((valor >> ((4 - 1 - i) * 8)) & 0xFF);
+        }
+    }
+
+    /*
+    public void escribirOperando(int direccionLogica, int valor) {
+        int direccionFisica = getDireccionFisica(direccionLogica);
         int tamanio = valor & 0b11;
         tamanio = 4 - tamanio; 
         for(int i=0; i<tamanio;i++) {
@@ -193,8 +210,9 @@ public class MemoriaV2 implements MemoriaBase {
         memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
         memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
         memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
-        memoria[direccionFisica + 3] = (byte) (valor & 0xFF);*/
+        memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
     }
+     */
     
     public void imprimirMemoria(int direccionLogica, int offset) {
     	int direccionFisica = getDireccionFisica(direccionLogica);

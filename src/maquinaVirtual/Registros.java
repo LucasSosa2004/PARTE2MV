@@ -93,13 +93,18 @@ public class Registros {
     	registros.replace(reg, val);
     }
     
-    public void modificaIP(int cantBytes) { //Se recibe la cant bytes que se debe avanzar (Se actualiza solo el offset)
+    /*public void modificaIP(int cantBytes) { //Se recibe la cant bytes que se debe avanzar (Se actualiza solo el offset)
         int ip = getIP();
         int segmento = ip & 0xFFFF0000;  // Extrae los 16 bits superiores.
         int offset   = ip & 0x0000FFFF;    // Extrae los 16 bits inferiores.
         offset = (offset + cantBytes) & 0xFFFF; // Se suma y se restringe a 16 bits.
         int nuevoIP = segmento | offset;
         setIP(nuevoIP);
+    }*/
+    public void modificaIP(int cantBytes) {
+    	int ip = getIP();
+    	ip += cantBytes;
+    	setIP(ip);
     }
     
     public int getDirFisicaIP() {
@@ -108,7 +113,7 @@ public class Registros {
     }
     
 
-    public int leerSectorRegistro(int operando) {
+   public int leerSectorRegistro(int operando) {
 
     	int codRegistro = (operando >>> 4) & 0x0F;
     	int sectorRegistro = (operando >>> 2) & 0x03;
@@ -125,6 +130,43 @@ public class Registros {
                 throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
         }
     }
+//   public int leerSectorRegistro(int operando) {
+//
+//	    int codRegistro = (operando >>> 4) & 0x0F;
+//	    int sectorRegistro = (operando >>> 2) & 0x03;
+//
+//	    String nombreRegistro = getNombreRegistro(codRegistro);
+//	    int valorCompleto = getRegistro(nombreRegistro); 
+//
+//	    switch (sectorRegistro) {
+//	        case 0b00: 
+//	            return valorCompleto; // entero 32 bits
+//	        case 0b01: { // byte bajo con signo
+//	            int val8 = valorCompleto & 0xFF;
+//	            if ((val8 & 0x80) != 0) {
+//	                val8 |= 0xFFFFFF00;
+//	            }
+//	            return val8;
+//	        }
+//	        case 0b10: { // segundo byte bajo con signo
+//	            int val8b = (valorCompleto >>> 8) & 0xFF;
+//	            if ((val8b & 0x80) != 0) {
+//	                val8b |= 0xFFFFFF00;
+//	            }
+//	            return val8b;
+//	        }
+//	        case 0b11: { // 16 bits con signo
+//	            int val16 = valorCompleto & 0xFFFF;
+//	            if ((val16 & 0x8000) != 0) {
+//	                val16 |= 0xFFFF0000;
+//	            }
+//	            return val16;
+//	        }
+//	        default:
+//	            throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
+//	    }
+//	}
+
     
     public int escribirSectorRegistro(int operando, int nuevoValor) {
     	
@@ -143,7 +185,6 @@ public class Registros {
                 throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
         }
         
-        System.out.println("Registro escrito"+ nombreRegistro+ "valor"+ valorCompleto);
         // Actualiza el registro con el nuevo valor.
         setRegistro(nombreRegistro, valorCompleto);
         //System.out.println("valor actualizado del registro CX "+ this.getECX());
