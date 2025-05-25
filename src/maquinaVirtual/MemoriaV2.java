@@ -109,7 +109,10 @@ public class MemoriaV2 implements MemoriaBase {
     public void escribirByte(int direccionFisica,byte valor) {
     	memoria[direccionFisica] = valor;
     }
-
+    public void escribirByteLogica(int direccionLogica, byte valor) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	escribirByte(direccionFisica,valor);
+    }
     @Override
 	 public byte leerPrimerByte(int dirLogicaIP) {
 		int dirFisicaIP = getDireccionFisica(dirLogicaIP); 
@@ -187,6 +190,7 @@ public class MemoriaV2 implements MemoriaBase {
         memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
     }
 
+    
     @Override
     public void escribirOperando(int direccionLogica, int valor) {
         int direccionFisica = getDireccionFisica(direccionLogica);
@@ -212,7 +216,8 @@ public class MemoriaV2 implements MemoriaBase {
         memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
         memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
     }
-     */
+        */
+     
     
     public void imprimirMemoria(int direccionLogica, int offset) {
     	int direccionFisica = getDireccionFisica(direccionLogica);

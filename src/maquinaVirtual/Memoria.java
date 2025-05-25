@@ -83,6 +83,8 @@ public class Memoria implements MemoriaBase {
 	    return valor;
 	}
 
+
+	
 	public void escribirOperando(int direccionLogica, int valor) {
 		
 	    int direccionFisica = getDireccionFisica(direccionLogica);
@@ -99,13 +101,17 @@ public class Memoria implements MemoriaBase {
 	    memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
 	}
 	
+	
 	public int agregarOffset(int direccionLogica, int offsetAdicional) {
 	    int offset = (direccionLogica & 0xFFFF) + offsetAdicional; // Extraer solo el offset (los 16 bits bajos)
 	    offset &= 0xFFFF; // Asegurarse de que no se pase de 16 bits
 	    int segmento = direccionLogica & 0xFFFF0000; // Conservar el segmento (los 16 bits altos)
 	    return segmento | offset;
 	}
-	
+    public void escribirByteLogica(int direccionLogica, byte valor) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	escribirByte(direccionFisica,valor);
+    }
 	public byte leerByteLogica(int direccionLogica) {
         return leerByte(getDireccionFisica(direccionLogica));
     }

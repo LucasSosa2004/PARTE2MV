@@ -76,7 +76,7 @@ public class Operaciones {
         int destBytes = tamanioOperando(tipoOpA, opA);
         
         // Si la fuente es mas pequena que el destino, hacemos sign-extension
-        /*if (srcBytes < destBytes) {
+        if (srcBytes < destBytes) {
             int maskSrc = (1 << (8 * srcBytes)) - 1;        // bits bajos de la fuente
             int v       = valorB & maskSrc;
             int signBit = 1 << (8 * srcBytes - 1);         // bit de signo en la fuente
@@ -88,10 +88,12 @@ public class Operaciones {
                 // positivo: alto queda en 0
                 valorB = v;
             }
-        }*/
+        }
+        /*
         if(srcBytes<destBytes) {
         	signExtend(valorB,srcBytes);
         }
+        }*/
 
         // propagamos el tamano del operando fuente
         guardarValorEnDestino(tipoOpA, opA, valorB);
@@ -473,7 +475,7 @@ public class Operaciones {
 	    	}
 	    	
 	    	for(int i=0; i<maxChars;i++) {
-	    		memoria.escribirByte(EDX + i, (byte)input.charAt(i));
+	    		memoria.escribirByteLogica(EDX + i, (byte)input.charAt(i));
 	    	}
 	    		
 	    }
@@ -485,7 +487,7 @@ public class Operaciones {
 	    		str.append((char)memoria.leerByteLogica(EDX + offset));	
 	    		offset++;
 	    	}
-	    	str.append(0);
+	    	//str.append(0);
 	    	System.out.println(str);
 	    }
 	    else if(modo == 7) {
@@ -619,8 +621,8 @@ public class Operaciones {
                 int codRegistro = operandoDestino >> 4 & 0xF; //Registro que tiene el puntero
                 String nombreReg = registros.getNombreRegistro(codRegistro);
                 int punteroAlmacenado = registros.getRegistro(nombreReg);
-                //int offsetExtra = operandoDestino >> 8 & 0xFF;
-                int offsetExtra = (byte) (operandoDestino >> 8); 
+                int offsetExtra = operandoDestino >> 8 & 0xFF;
+                //int offsetExtra = (byte) (operandoDestino >> 8); 
 
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
                 memoria.escribirOperando(dirLogicaFinal, valor); 

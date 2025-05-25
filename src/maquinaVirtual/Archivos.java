@@ -153,7 +153,7 @@ public class Archivos {
             //TODO maaal
             // Memoria: escribimos todo el bloque de memoriaRaw
             byte[] mem = memoria.getMemoriaRaw();
-            fos.write(mem);
+            fos.write(mem);		
         }
     }
 
