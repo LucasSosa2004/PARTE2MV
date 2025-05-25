@@ -625,6 +625,7 @@ public class Operaciones {
                 //int offsetExtra = (byte) (operandoDestino >> 8); 
 
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
+
                 memoria.escribirOperando(dirLogicaFinal, valor); 
                 cantBytesOperacion = 4;
                 break;

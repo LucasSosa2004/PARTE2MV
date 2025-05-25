@@ -8,6 +8,7 @@ public class MaquinaVirtual {
     private Registros registros;
     private UnidadAritmeticoLogica unidadAritmeticoLogica;
     private DissasemblerAux dissasemblerAux;
+    private DisassemblerV2 disassemblerV2;
 
     private MemoriaV2 memoriaV2;
     private TablaDescripSegmentosV2 tablaV2;
@@ -27,7 +28,8 @@ public class MaquinaVirtual {
     	this.memoria = new MemoriaV2(parametros, tamMemoria,tablaV2);
     	this.registros = new Registros(tablaV2);
     	this.unidadAritmeticoLogica = new UnidadAritmeticoLogica(registros, memoria, tablaV2, archivos, testMode);
-    	this.dissasemblerAux = new DissasemblerAux(registros, memoria);
+    	this.dissasemblerAux = new DissasemblerAux(registros,memoria);
+    	this.disassemblerV2 = new DisassemblerV2(registros, memoria, tablaV2);
     }
     
     public MaquinaVirtual(HeaderMV header, List<String> parametros,  int tamMemoria, Archivos archivos, boolean testMode) {
@@ -38,7 +40,8 @@ public class MaquinaVirtual {
     	this.registros.cargarRegistrosV2(tablaV2);
         this.unidadAritmeticoLogica = new UnidadAritmeticoLogica(registros, memoria, tablaV2, archivos, testMode);
         this.unidadAritmeticoLogica.cargarMain(parametros);
-        this.dissasemblerAux = new DissasemblerAux(registros, memoria);
+        this.dissasemblerAux = new DissasemblerAux(registros,memoria);
+        this.disassemblerV2 = new DisassemblerV2(registros, memoria, tablaV2);
     }
 
     
@@ -63,7 +66,13 @@ public class MaquinaVirtual {
     	return this.tablaV2;
     }
     
+    public void mostrarCadenas() {
+        disassemblerV2.mostrarCadenas();        
+    }
 
+    public DisassemblerV2 getDissasemblerV2() {
+        return this.disassemblerV2;
+    }
 	public boolean isJumpEjecutado() {
         return unidadAritmeticoLogica.isJumpEjecutado();
     }

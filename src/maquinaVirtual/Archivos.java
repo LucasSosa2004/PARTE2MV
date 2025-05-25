@@ -104,6 +104,7 @@ public class Archivos {
         if(PS != null) {
         	direccionBase = PS.getTamanio();       	
         }
+        System.out.println("DIR: "+ direccionBase);
         while (offset < memoriaKiB && (readByte = fis.read()) != -1) {
             memoria.escribirByte(direccionBase + offset, (byte)readByte);
             offset++;
@@ -119,7 +120,7 @@ public class Archivos {
             fos.write(1); // versión
 
             // Tamaño de memoria
-            int memoriaKiB = memoria.getMemoriaRaw().length / 1024;
+            int memoriaKiB = memoria.getMemoriaRaw().length;
             fos.write((memoriaKiB >> 8) & 0xFF); // byte alto
             fos.write(memoriaKiB & 0xFF);        // byte bajo
 
@@ -150,10 +151,8 @@ public class Archivos {
                 fos.write(limite & 0xFF);
             }
 
-            //TODO maaal
-            // Memoria: escribimos todo el bloque de memoriaRaw
             byte[] mem = memoria.getMemoriaRaw();
-            fos.write(mem);		
+            fos.write(mem);
         }
     }
 

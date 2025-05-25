@@ -65,14 +65,23 @@ public class Main {
 	            if (header.getVersion() == 1) {
 	                MV = new MaquinaVirtual(header.getTamanoCodigov1(), false);
 	                cargarCodigo(fis, MV, header.getTamanoCodigov1());
+	                if (disassemblerMode) {
+	                    ejecutarDisassembler(MV, header.getTamanoCodigov1());
+	                }
 	            } else if (header.getVersion() == 2) {
 	                int tamMemoria = memoriaKiB * 1024;
 	                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria,archivos,false); // usa MemoriaV2 internamente
+	                DisassemblerV2 disV2 = new DisassemblerV2(MV.getRegistros(),MV.getMemoria(),MV.getTabla());
 	                cargarCodigo(fis,MV);
 
 	                MV.getTabla().mostrarTabla();
 	                MV.getRegistros().mostrarRegistros();
 	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getLimite()-30,32);
+	                
+	                if (disassemblerMode) {
+	                    disV2.mostrarCadenas();  // Primero mostrar cadenas
+	                    disV2.disassembleAll();  // Luego mostrar instrucciones
+	                }
 	                
 	            } else {
 	                System.err.println("Version de VMX no soportada.");
@@ -87,6 +96,7 @@ public class Main {
 	            	if (!archivos.tieneVMI()){
 	            		ejecutarPrograma(MV);
 	            		MV.getRegistros().mostrarRegistros();
+	            		MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("ES").getBase(),50);
 	            	}
 	            	else{
 	            		ejecutarEnDebug(MV, archivos);
@@ -316,6 +326,7 @@ public class Main {
 
         while (!IPcayoSegm && bytesInstruccion != -1) {
             ejecutar = true;
+            //System.out.println(IP);
 
             if (esperaInput || MV.getUnidadAritmeticoLogica().getBreakPointAnterior()) {
                 System.out.print(">>> ");
