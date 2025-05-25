@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 public class TablaDescripSegmentosV2 {
     private final ArrayList<DescriptorSegmento> tabla;
     private int entryPoint;
+    private MemoriaBase memoria;
 
     public TablaDescripSegmentosV2(HeaderMV header) {
         this.tabla = new ArrayList<DescriptorSegmento>();
@@ -18,6 +19,14 @@ public class TablaDescripSegmentosV2 {
     public TablaDescripSegmentosV2() {
         this.tabla = new ArrayList<DescriptorSegmento>();
         this.entryPoint=0;
+    }
+
+    public void setMemoria(MemoriaBase memoria) {
+        this.memoria = memoria;
+    }
+
+    public MemoriaBase getMemoria() {
+        return this.memoria;
     }
 
     public int getBase(int index) {
@@ -51,18 +60,32 @@ public class TablaDescripSegmentosV2 {
     }
 
     public void setTabla(HeaderMV header) {
-    	ArrayList<DescriptorSegmento> segmentos = header.getSegmentos();
-    	for (DescriptorSegmento segmento : segmentos) { //clave y valor
-    		if(segmento.getTamanio()>0) {
-    			short base = 0;
-    			if(!(tabla.isEmpty())) {
-    				DescriptorSegmento anterior = tabla.getLast();    				
-    				base = (short)(anterior.getLimite() + 1);    				
-    			}
-    			short limite = (short)(base + segmento.getTamanio());
-    			agregarSegmento(segmento.getNombre(),base,limite);
-    		}
-    	}
+        ArrayList<DescriptorSegmento> segmentos = header.getSegmentos();
+        HashMap<String, DescriptorSegmento> segmentosMap = new HashMap<>();
+        
+        // Primero guardamos todos los segmentos en un mapa
+        for (DescriptorSegmento segmento : segmentos) {
+            if(segmento.getTamanio() > 0) {
+                segmentosMap.put(segmento.getNombre(), segmento);
+            }
+        }
+        
+        // Definimos el orden deseado
+        String[] ordenSegmentos = {"PS", "KS", "CS", "DS", "ES", "SS"};
+        
+        // Cargamos los segmentos en el orden especificado
+        for (String nombreSegmento : ordenSegmentos) {
+            DescriptorSegmento segmento = segmentosMap.get(nombreSegmento);
+            if (segmento != null) {
+                short base = 0;
+                if(!(tabla.isEmpty())) {
+                    DescriptorSegmento anterior = tabla.getLast();    				
+                    base = (short)(anterior.getLimite() + 1);    				
+                }
+                short limite = (short)(base + segmento.getTamanio());
+                agregarSegmento(segmento.getNombre(), base, limite);
+            }
+        }
     }
     
     public DescriptorSegmento getSegmento(String segmento) {

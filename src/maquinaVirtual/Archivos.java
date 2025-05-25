@@ -54,6 +54,11 @@ public class Archivos {
         if (memLo == -1) 
             throw new IOException("Header VMI incompleto (tamaño)");
         int memoriaKiB = (memHi << 8) | (memLo & 0xFF);
+        
+        System.out.println("\nCargando VMI:");
+        System.out.println("Identificador: " + identificador);
+        System.out.println("Versión: " + version);
+        System.out.println("Tamaño memoria: " + memoriaKiB + " KiB");
 
         
         if (!"VMI25".equals(identificador) || version != 1) {
@@ -62,18 +67,8 @@ public class Archivos {
         Registros registros = MV.getRegistros();
         TablaDescripSegmentosV2 tabla = MV.getTabla();
         
-        // registros
-        for (int reg = 0; reg < 16; reg++) {
-            int valor = 0;
-            for (int b = 0; b < 4; b++) {
-                int read = fis.read();
-                if (read == -1) throw new IOException("Registro incompleto en VMI");
-                valor = (valor << 8) | (read & 0xFF);
-            }
-            registros.addRegistro(reg, valor);
-        }
-
-        // tabla
+        // Primero cargamos la tabla de segmentos
+        System.out.println("\nCargando tabla de segmentos:");
         for (int i = 0; i < 6; i++) {
             // 2 bytes base
             int hiBase = fis.read();
@@ -87,72 +82,102 @@ public class Archivos {
             if (loLim == -1) throw new IOException("Descriptor límite incompleto");
             short limite = (short)((hiLim << 8) | (loLim & 0xFF));
 
-            if (limite > base) {
-                String nombre = tabla.getNombreSegmento(i); // "PS", "CS", ...
-                tabla.agregarSegmento(nombre, base, limite);
-            }
+            // Agregamos el segmento con el nombre que corresponde según el orden
+            String nombre = tabla.getNombreSegmento(i);
+            System.out.printf("Segmento %s: Base=0x%04X, Límite=0x%04X, Tamaño=%d bytes\n", 
+                            nombre, base, limite, limite - base + 1);
+            tabla.agregarSegmento(nombre, base, limite);
         }
 
-     
-        // memoria
+        // Luego cargamos la memoria
+        System.out.println("\nCargando memoria:");
         MemoriaBase memoria = MV.getMemoria();
         int offset = 0;
         int readByte;
-        int direccionBase = 0;
-        
-        DescriptorSegmento PS = tabla.getSegmento("PS");
-        if(PS != null) {
-        	direccionBase = PS.getTamanio();       	
-        }
-        while (offset < memoriaKiB && (readByte = fis.read()) != -1) {
-            memoria.escribirByte(direccionBase + offset, (byte)readByte);
+        int bytesLeidos = 0;
+        while (offset < memoriaKiB * 1024 && (readByte = fis.read()) != -1) {
+            if (bytesLeidos % 16 == 0) {
+                System.out.printf("\n0x%04X: ", offset);
+            }
+            System.out.printf("%02X ", readByte);
+            memoria.escribirByte(offset, (byte)readByte);
             offset++;
+            bytesLeidos++;
+        }
+        System.out.println("\n");
+
+        // Finalmente cargamos los registros
+        System.out.println("\nCargando registros:");
+        for (int reg = 0; reg < 16; reg++) {
+            int valor = 0;
+            for (int b = 0; b < 4; b++) {
+                int read = fis.read();
+                if (read == -1) throw new IOException("Registro incompleto en VMI");
+                valor = (valor << 8) | (read & 0xFF);
+            }
+            String nombreReg = registros.getNombreRegistro(reg);
+            System.out.printf("Registro %s: 0x%08X\n", nombreReg, valor);
+            registros.addRegistro(reg, valor);
         }
     }
 
     public void guardarArchivoVMI(Registros registros, MemoriaBase memoria, TablaDescripSegmentosV2 tabla) throws IOException {
         if (archivoVMI == null) throw new IOException("No hay archivo VMI definido para guardar");
 
+        System.out.println("\nGuardando estado en VMI:");
         try (FileOutputStream fos = new FileOutputStream(archivoVMI)) {
             // Header
+            System.out.println("Escribiendo header: VMI25 v1");
             fos.write("VMI25".getBytes()); // 5 bytes
             fos.write(1); // versión
 
             // Tamaño de memoria
             int memoriaKiB = memoria.getMemoriaRaw().length / 1024;
+            System.out.println("Tamaño memoria: " + memoriaKiB + " KiB");
             fos.write((memoriaKiB >> 8) & 0xFF); // byte alto
             fos.write(memoriaKiB & 0xFF);        // byte bajo
 
+            System.out.println("\nGuardando registros:");
             // Registros
             for (int i = 0; i < 16; i++) {
                 int valor = registros.getRegistro(i);
+                String nombreReg = registros.getNombreRegistro(i);
+                System.out.printf("Registro %s: 0x%08X\n", nombreReg, valor);
                 fos.write((valor >> 24) & 0xFF);
                 fos.write((valor >> 16) & 0xFF);
                 fos.write((valor >> 8) & 0xFF);
                 fos.write(valor & 0xFF);
             }
 
-            // Tabla de segmentos (PS, CS, DS, ES, SS, KS)
-            int j=0;
+            System.out.println("\nGuardando tabla de segmentos:");
+            // Tabla de segmentos - guardamos en el orden en que están en la tabla
             for (int i = 0; i < 6; i++) {
-            	String nombre = tabla.getNombreSegmento(i);
-            	DescriptorSegmento segmento = tabla.getSegmento(j); // puede ser null
+                DescriptorSegmento segmento = tabla.getSegmento(i);
                 short base = 0;
                 short limite = 0;
-                if(segmento != null && segmento.getNombre().equals(nombre)) {
-            		base = segmento.getBase();
-            		limite = segmento.getLimite();
-            		j++;
+                if (segmento != null) {
+                    base = segmento.getBase();
+                    limite = segmento.getLimite();
                 }
+                String nombre = tabla.getNombreSegmento(i);
+                System.out.printf("Segmento %s: Base=0x%04X, Límite=0x%04X, Tamaño=%d bytes\n", 
+                                nombre, base, limite, limite - base + 1);
                 fos.write((base >> 8) & 0xFF);
                 fos.write(base & 0xFF);
                 fos.write((limite >> 8) & 0xFF);
                 fos.write(limite & 0xFF);
             }
 
-            //TODO maaal
+            System.out.println("\nGuardando memoria:");
             // Memoria: escribimos todo el bloque de memoriaRaw
             byte[] mem = memoria.getMemoriaRaw();
+            for (int i = 0; i < mem.length; i++) {
+                if (i % 16 == 0) {
+                    System.out.printf("\n0x%04X: ", i);
+                }
+                System.out.printf("%02X ", mem[i] & 0xFF);
+            }
+            System.out.println("\n");
             fos.write(mem);
         }
     }

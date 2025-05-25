@@ -22,4 +22,7 @@ public interface MemoriaBase {
 	    public void escribirByte(int direccionLogica,byte valor);
 	    public int getTamano();
 	    public void escribirPila(int direccionLogica,int valor);
+		public void escribirByteLogica(int direccionLogica, byte valor);
+    	
+    
 }

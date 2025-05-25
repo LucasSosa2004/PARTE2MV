@@ -222,4 +222,9 @@ public class MemoriaV2 implements MemoriaBase {
     public int getTamano() {
     	return this.tamanoMemoria;
     }
+
+    public void escribirByteLogica(int direccionLogica, byte valor) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	escribirByte(direccionFisica,valor);
+    }
 }

@@ -76,7 +76,32 @@ public class HeaderMV {
 
     // Setters
     public void agregarSegmento(String segmento, int tamanio) {
-    	segmentos.add(new DescriptorSegmento(segmento,tamanio));
+        // Aseguramos que los segmentos se agreguen en el orden correcto
+        String[] ordenSegmentos = {"PS", "KS", "CS", "DS", "ES", "SS"};
+        int indice = -1;
+        
+        // Encontrar el índice del segmento en el orden deseado
+        for (int i = 0; i < ordenSegmentos.length; i++) {
+            if (ordenSegmentos[i].equals(segmento)) {
+                indice = i;
+                break;
+            }
+        }
+        
+        if (indice != -1) {
+            // Si el ArrayList está vacío, simplemente agregamos al final
+            if (segmentos.isEmpty()) {
+                segmentos.add(new DescriptorSegmento(segmento, tamanio));
+            } else {
+                // Si no está vacío, insertamos en la posición correcta
+                // Aseguramos que no excedamos el tamaño actual
+                int posicionInsercion = Math.min(indice, segmentos.size());
+                segmentos.add(posicionInsercion, new DescriptorSegmento(segmento, tamanio));
+            }
+        } else {
+            // Si no está en el orden predefinido, agregar al final
+            segmentos.add(new DescriptorSegmento(segmento, tamanio));
+        }
     }
     
     public void setTamanoCodigov1(int tamanoCodigov1) {

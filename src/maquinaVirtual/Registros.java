@@ -9,7 +9,24 @@ public class Registros {
 	private MemoriaBase memoria;
 
 	public Registros(TablaDescripSegmentosV2 tabla) {
-		this.registros = new HashMap<String,Integer>();
+		this.memoria = tabla.getMemoria();
+		this.registros = new HashMap<String, Integer>();
+		this.registros.put("CS", 0);
+		this.registros.put("DS", 0);
+		this.registros.put("ES", 0);
+		this.registros.put("SS", 0);
+		this.registros.put("KS", 0);
+		this.registros.put("IP", 0);
+		this.registros.put("SP", 0);
+		this.registros.put("BP", 0);
+		this.registros.put("CC", 0);
+		this.registros.put("AC", 0);
+		this.registros.put("EAX", 0);
+		this.registros.put("EBX", 0);
+		this.registros.put("ECX", 0);
+		this.registros.put("EDX", 0);
+		this.registros.put("EEX", 0);
+		this.registros.put("EFX", 0);
 	}
 	
 	public Registros(MemoriaBase memoria) {
@@ -169,7 +186,6 @@ public class Registros {
 
     
     public int escribirSectorRegistro(int operando, int nuevoValor) {
-    	
         int codRegistro = (operando >>> 4) & 0x0F;
         int sectorRegistro = (operando >>> 2) & 0x03;
         String nombreRegistro = getNombreRegistro(codRegistro);
@@ -187,10 +203,7 @@ public class Registros {
         
         // Actualiza el registro con el nuevo valor.
         setRegistro(nombreRegistro, valorCompleto);
-        //System.out.println("valor actualizado del registro CX "+ this.getECX());
-        //System.out.println("Valor registro CC "+ Integer.toBinaryString(getCC()));
         return cantBytesOp;
-
     }
     
     public void modificarCC(int ultimoResultado, int numBytes) {

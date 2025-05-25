@@ -1,0 +1,277 @@
+                            | \\EXTRA 1024
+                            | null    equ     -1
+                            | size_es equ     1024
+                            |
+                            |
+                            | ; inicializar HEAP
+                            | ; sin parÃ¡metros
+                            | ; asume que todo el extra segment es para uso de memoria dinÃ¡mica
+[0000] 70 20 00 00 20       | heap_init:        mov       [es],         es
+[0005] B1 00 04 00 00 20    |                   add       [es],          4
+[000B] 80 00 0F             |                   sys        0xf
+[000E] 0E                   |                   ret
+                            | ; invocacion:
+                            | ; call heap_init
+                            |
+                            |
+                            |
+                            | ; solicita memoria dinÃ¡mica
+                            | ; parÃ¡metros: +8 cantidad de bytes a solicitar
+                            | ; devuelve en EAX direcciÃ³n de memoria o NULL si no hay memoria suficient
+e
+[000F] 4B 70                | alloc:           push         bp
+[0011] 50 60 70             |                   mov         bp,         sp
+[0014] 4B BC                |                  push         bx
+[0016] 90 FF FF A0          |                   mov        eax,       null
+[001A] D0 00 00 20 BC       |                   mov         bx,       [es]
+[001F] D1 00 08 70 BC       |                   add         bx,     [bp+8]
+[0024] 96 04 00 BC          |                   cmp         bx,    size_es
+[0028] 83 00 3A             |                    jp   allocfin
+                            |
+[002B] 80 00 0F             |                   sys        0xf
+                            |
+[002E] D0 00 00 20 A0       |                   mov        eax,       [es]
+[0033] F1 00 08 70 00 00 20 |                   add       [es],     [bp+8]
+[003A] 4C BC                | allocfin:         pop         bx
+[003C] 50 70 60             |                   mov         sp,         bp
+[003F] 4C 70                |                   pop         bp
+[0041] 0E                   |                   ret
+                            | ; invocacion:
+                            | ; push <cantidad de bytes a solicitar>
+                            | ; call alloc
+                            | ; add  sp, 4
+                            | ; << eax direcciÃ³n de memoria
+                            |
+                            | ; Binary Trees
+                            |
+                            | ; Estructura del nodo:
+                            | ;    +------------+
+                            | ;  0 |   entero   |  (4 bytes)
+                            | ;    +------------+
+                            | ; +4 |   *left    |  (4 bytes)
+                            | ;    +------------+
+                            | ; +8 |   *right   |  (4 bytes)
+                            | ;    +------------+
+                            | btn_size    equ     12 ; Binary Tree Node
+                            | val         equ     0
+                            | left        equ     4
+                            | right       equ     8
+                            |
+                            |
+                            | ;----------------------------------------
+                            | ; crea un nuevo nodo de Ã¡rbol binario
+                            | ; parÃ¡metros: +8 valor entero
+                            | ;----------------------------------------
+                            | ; invocaciÃ³n:
+                            | ; push  <valor entero>
+                            | ; call  btn_new
+                            | ; add   sp, 4
+                            | ; << eax puntero al nuevo nodo
+                            | ;----------------------------------------
+[0042] 4B 70                | btn_new:         push         bp
+[0044] 50 60 70             |                   mov         bp,         sp
+                            |
+[0047] 8B 00 0C             |                  push   btn_size
+[004A] 8D 00 0F             |                  call      alloc
+[004D] 91 00 04 60          |                   add         sp,          4
+                            |
+[0051] 96 FF FF A0          |                   cmp        eax,       null
+[0055] 82 00 6B             |                    jz btn_new_fin
+                            |
+[0058] F0 00 08 70 00 00 A0 |                   mov  [eax+val],     [bp+8]
+[005F] B0 FF FF 00 04 A0    |                   mov [eax+left],       null
+[0065] B0 FF FF 00 08 A0    |                   mov [eax+right],       null
+                            |
+[006B] 50 70 60             | btn_new_fin:        mov         sp,         bp
+[006E] 4C 70                |                   pop         bp
+[0070] 0E                   |                   ret
+                            |
+                            | ;----------------------------------------
+                            | ; agrega nodo a Ã¡rbol binario de bÃºsqueda (BST)
+                            | ; parÃ¡metros:
+                            | ;  +8 doble puntero a root
+                            | ; +12 puntero a nodo de arbol a insertar
+                            | ;----------------------------------------
+                            | ; invocaciÃ³n:
+                            | ; push  <*bnt>
+                            | ; push  <**root>
+                            | ; call  bst_add
+                            | ; add   sp,8
+                            | ; (no devuelve nada)
+                            | ;----------------------------------------
+[0071] 4B 70                | bst_add:         push         bp
+[0073] 50 60 70             |                   mov         bp,         sp
+[0076] 4B A0                |                  push        eax
+[0078] 4B B0                |                  push        ebx
+[007A] 4B D0                |                  push        edx
+                            |
+[007C] D0 00 08 70 D0       |                   mov        edx,     [bp+8] ;  **root
+[0081] D0 00 00 D0 B0       |                   mov        ebx,      [edx] ;  *root
+[0086] D0 00 0C 70 A0       |                   mov        eax,    [bp+12] ;  *bnt a insertar
+                            |
+[008B] 96 FF FF A0          |                   cmp        eax,       null
+[008F] 82 00 D2             |                    jz bst_add_end
+                            |
+[0092] 96 FF FF B0          |                   cmp        ebx,       null
+[0096] 82 00 CD             |                    jz bst_append
+                            |
+[0099] F6 00 00 A0 00 00 B0 |                   cmp  [ebx+val],  [eax+val]
+[00A0] 82 00 D2             |                    jz bst_add_end
+                            |
+[00A3] 83 00 A9             |                    jp bst_add_left
+[00A6] 84 00 BB             |                    jn bst_add_right
+                            |
+[00A9] 91 00 04 B0          | bst_add_left:        add        ebx,       left
+[00AD] 4B A0                |                  push        eax
+[00AF] 4B B0                |                  push        ebx
+[00B1] 8D 00 71             |                  call    bst_add
+[00B4] 91 00 08 60          |                   add         sp,          8
+[00B8] 81 00 D2             |                   jmp bst_add_end
+                            |
+[00BB] 91 00 08 B0          | bst_add_right:        add        ebx,      right
+[00BF] 4B A0                |                  push        eax
+[00C1] 4B B0                |                  push        ebx
+[00C3] 8D 00 71             |                  call    bst_add
+[00C6] 91 00 08 60          |                   add         sp,          8
+[00CA] 81 00 D2             |                   jmp bst_add_end
+                            |
+[00CD] 70 A0 00 00 D0       | bst_append:        mov      [edx],        eax
+[00D2] 4C D0                | bst_add_end:        pop        edx
+[00D4] 4C B0                |                   pop        ebx
+[00D6] 4C A0                |                   pop        eax
+[00D8] 50 70 60             |                   mov         sp,         bp
+[00DB] 4C 70                |                   pop         bp
+[00DD] 0E                   |                   ret
+                            |
+                            |
+                            | ;----------------------------------------
+                            | ; imprime en in-order Ã¡rbol binario de bÃºsqueda (BST)
+                            | ; parÃ¡metros:
+                            | ;  +8 puntero simple a root
+                            | ;----------------------------------------
+                            | ; invocaciÃ³n:
+                            | ; push  <*root>
+                            | ; call  inorder
+                            | ; add   sp,4
+                            | ; (no devuelve nada)
+                            | ;----------------------------------------
+[00DE] 4B 70                | inorder:         push         bp
+[00E0] 50 60 70             |                   mov         bp,         sp
+[00E3] 4B A0                |                  push        eax
+[00E5] 4B B0                |                  push        ebx
+[00E7] 4B C0                |                  push        ecx
+[00E9] 4B D0                |                  push        edx
+                            |
+[00EB] D0 00 08 70 B0       |                   mov        ebx,     [bp+8] ;  *root
+                            |
+[00F0] 96 FF FF B0          |                   cmp        ebx,       null
+[00F4] 82 01 1F             |                    jz inorder_end
+                            |
+                            |                 ; llamo por izquierda
+[00F7] CB 00 04 B0          |                  push [ebx+left]
+[00FB] 8D 00 DE             |                  call    inorder
+[00FE] 91 00 04 60          |                   add         sp,          4
+                            |
+                            |                 ; preparo en edx la direcciÃ³n de la variable aux
+[0102] 50 B0 D0             |                   mov        edx,        ebx
+[0105] 91 00 00 D0          |                   add        edx,        val
+[0109] 90 00 01 A0          |                   mov        eax,     0x0001
+[010D] 90 04 01 C0          |                   mov        ecx,     0x0401
+[0111] 80 00 02             |                   sys     0x0002
+                            |
+                            |                 ; llamo por derecha
+[0114] CB 00 08 B0          |                  push [ebx+right]
+[0118] 8D 00 DE             |                  call    inorder
+[011B] 91 00 04 60          |                   add         sp,          4
+                            |
+[011F] 4C D0                | inorder_end:        pop        edx
+[0121] 4C C0                |                   pop        ecx
+[0123] 4C B0                |                   pop        ebx
+[0125] 4C A0                |                   pop        eax
+[0127] 50 70 60             |                   mov         sp,         bp
+[012A] 4C 70                |                   pop         bp
+[012C] 0E                   |                   ret
+                            |
+                            |
+                            | root  equ    4
+[012D] 4B 70                | MAIN:            push         bp
+[012F] 50 60 70             |                   mov         bp,         sp
+[0132] 92 00 04 60          |                   sub         sp,          4 ;  root de ABB
+[0136] 4B A0                |                  push        eax
+[0138] 4B D0                |                  push        edx
+                            |
+[013A] 8D 00 00             |                  call  heap_init ;  inicializa memoria dinÃ¡mica
+                            |
+[013D] 80 00 0F             |                   sys        0xf
+                            |
+[0140] 50 70 D0             |                   mov        edx,         bp
+[0143] 91 00 04 D0          |                   add        edx,       root ;  edx = &root
+[0147] B0 FF FF 00 00 D0    |                   mov      [edx],       null ;  inicializo root = null
+                            |
+[014D] 80 00 0F             |                   sys        0xf
+                            |
+[0150] 8B 00 14             |                  push         20
+[0153] 8D 00 42             |                  call    btn_new
+[0156] 91 00 04 60          |                   add         sp,          4
+                            |
+[015A] 4B A0                |                  push        eax
+[015C] 4B D0                |                  push        edx
+[015E] 8D 00 71             |                  call    bst_add
+[0161] 91 00 08 60          |                   add         sp,          8
+                            |
+[0165] 8B 00 14             |                  push         20
+[0168] 8D 00 42             |                  call    btn_new
+[016B] 91 00 04 60          |                   add         sp,          4
+                            |
+[016F] 4B A0                |                  push        eax
+[0171] 4B D0                |                  push        edx
+[0173] 8D 00 71             |                  call    bst_add
+[0176] 91 00 08 60          |                   add         sp,          8
+                            |
+[017A] 8B 00 0A             |                  push         10
+[017D] 8D 00 42             |                  call    btn_new
+[0180] 91 00 04 60          |                   add         sp,          4
+                            |
+[0184] 4B A0                |                  push        eax
+[0186] 4B D0                |                  push        edx
+[0188] 8D 00 71             |                  call    bst_add
+[018B] 91 00 08 60          |                   add         sp,          8
+                            |
+[018F] 8B 00 0F             |                  push         15
+[0192] 8D 00 42             |                  call    btn_new
+[0195] 91 00 04 60          |                   add         sp,          4
+                            |
+[0199] 4B A0                |                  push        eax
+[019B] 4B D0                |                  push        edx
+[019D] 8D 00 71             |                  call    bst_add
+[01A0] 91 00 08 60          |                   add         sp,          8
+                            |
+[01A4] 8B 00 1E             |                  push         30
+[01A7] 8D 00 42             |                  call    btn_new
+[01AA] 91 00 04 60          |                   add         sp,          4
+                            |
+[01AE] 4B A0                |                  push        eax
+[01B0] 4B D0                |                  push        edx
+[01B2] 8D 00 71             |                  call    bst_add
+[01B5] 91 00 08 60          |                   add         sp,          8
+                            |
+[01B9] 8B 00 19             |                  push         25
+[01BC] 8D 00 42             |                  call    btn_new
+[01BF] 91 00 04 60          |                   add         sp,          4
+                            |
+[01C3] 4B A0                |                  push        eax
+[01C5] 4B D0                |                  push        edx
+[01C7] 8D 00 71             |                  call    bst_add
+[01CA] 91 00 08 60          |                   add         sp,          8
+                            |
+[01CE] CB 00 00 D0          |                  push      [edx]
+[01D2] 8D 00 DE             |                  call    inorder
+[01D5] 91 00 04 60          |                   add         sp,          4
+                            |
+[01D9] 4C D0                | main_end:         pop        edx
+[01DB] 4C A0                |                   pop        eax
+[01DD] 50 70 60             |                   mov         sp,         bp
+[01E0] 4C 70                |                   pop         bp
+[01E2] 0F                   |                  stop
+                            |
+

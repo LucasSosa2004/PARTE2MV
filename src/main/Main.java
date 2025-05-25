@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.HashMap;
 
 import maquinaVirtual.HeaderMV;
 import maquinaVirtual.MaquinaVirtual;
@@ -65,32 +66,30 @@ public class Main {
 	            if (header.getVersion() == 1) {
 	                MV = new MaquinaVirtual(header.getTamanoCodigov1(), false);
 	                cargarCodigo(fis, MV, header.getTamanoCodigov1());
+	                if (disassemblerMode) {
+	                    ejecutarDisassembler(MV, header.getTamanoCodigov1());
+	                }
 	            } else if (header.getVersion() == 2) {
 	                int tamMemoria = memoriaKiB * 1024;
-	                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria,archivos,false); // usa MemoriaV2 internamente
-	                cargarCodigo(fis,MV);
-
-	                MV.getTabla().mostrarTabla();
-	                MV.getRegistros().mostrarRegistros();
-	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getLimite()-30,32);
+	                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria, archivos, false);
+	                cargarCodigo(fis, MV);
 	                
+	                if (disassemblerMode) {
+	                    MV.getDissasemblerV2().mostrarCadenas();  // Primero mostrar cadenas
+	                    MV.getDissasemblerV2().disassembleAll();  // Luego mostrar instrucciones
+	                }
 	            } else {
 	                System.err.println("Version de VMX no soportada.");
 	                fis.close();
 	                return;
 	            }
 	            
-	            if(disassemblerMode) {
-	            	int tamanoCodigo = header.getTamanoCodigov1();
-	            	ejecutarDisassembler(MV,tamanoCodigo);
-	            }else {
-	            	if (!archivos.tieneVMI()){
-	            		ejecutarPrograma(MV);
-	            		MV.getRegistros().mostrarRegistros();
-	            	}
-	            	else{
-	            		ejecutarEnDebug(MV, archivos);
-	            	}
+	            if (!disassemblerMode) {
+	                if (!archivos.tieneVMI()) {
+	                    ejecutarPrograma(MV);
+	                } else {
+	                    ejecutarEnDebug(MV, archivos);
+	                }
 	            }
 	            	
 	            	
@@ -98,9 +97,17 @@ public class Main {
             }
             else { // no vmx pero si vmi
             	int tamMemoria = memoriaKiB * 1024;
-            	MV = new MaquinaVirtual(parametrosPrograma,tamMemoria,archivos,disassemblerMode);
+            	HeaderMV header = new HeaderMV("VMI25", 1);
+            	header.setMemoriaKiB(memoriaKiB);
+            	MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria, archivos, disassemblerMode);
             	if (archivos.tieneVMI()) {
-                    archivos.cargarEnMV(MV); 
+                    // Primero cargamos el estado desde el VMI
+                    archivos.cargarEnMV(MV);
+                    
+                    // Ya no necesitamos llamar a cargarRegistrosV2 aquí porque
+                    // los registros ya fueron cargados desde el VMI en cargarEnMV
+                    
+                    // Finalmente cargamos los parámetros del programa
                     MV.getUnidadAritmeticoLogica().cargarMain(parametrosPrograma);
 
                     MV.getTabla().mostrarTabla(); 
@@ -109,13 +116,15 @@ public class Main {
                 }
 
                 if (disassemblerMode) {
-                	int tamanoCodigo = MV.getTabla().getSegmento("CS").getTamanio();
-            		ejecutarDisassembler(MV, tamanoCodigo);
+                    if (archivos.tieneVMI()) {
+                        int tamanoCodigo = MV.getTabla().getSegmento("CS").getTamanio();
+                        ejecutarDisassemblerV2(MV, tamanoCodigo);
+                    } else {
+                        System.err.println("Error: No se puede ejecutar el disassembler sin un archivo VMI");
+                    }
                 } else {
                     ejecutarEnDebug(MV,archivos);
-                    
                 }
-
             }
             
             
@@ -145,24 +154,26 @@ public class Main {
                     }
                     int tamanoCodigo = ((v1Extra[0] & 0xFF) << 8) | (v1Extra[1] & 0xFF);
                     header.setTamanoCodigov1(tamanoCodigo);
-                    //System.out.println("tamano codigo = " + tamanoCodigo);
                 } else if (version == 2) {
                     byte[] v2Extra = new byte[12]; // bytes 6-17
                     if (fis.read(v2Extra) != v2Extra.length) {
                         throw new IOException("Header .vmx v2 incompleto.");
                     }
-                    header.agregarSegmento("CS", mascara2bytes(v2Extra[0], v2Extra[1]));
-                    header.agregarSegmento("DS", mascara2bytes(v2Extra[2], v2Extra[3]));
-                    header.agregarSegmento("ES", mascara2bytes(v2Extra[4], v2Extra[5]));
-                    header.agregarSegmento("SS", mascara2bytes(v2Extra[6], v2Extra[7]));
-                    header.agregarSegmento("KS", mascara2bytes(v2Extra[8], v2Extra[9]));
-                    /*
-                    header.setTamanoCS(((v2Extra[0] & 0xFF) << 8) | (v2Extra[1] & 0xFF));
-                    header.setTamanoDS(((v2Extra[2] & 0xFF) << 8) | (v2Extra[3] & 0xFF));
-                    header.setTamanoES(((v2Extra[4] & 0xFF) << 8) | (v2Extra[5] & 0xFF));
-                    header.setTamanoSS(((v2Extra[6] & 0xFF) << 8) | (v2Extra[7] & 0xFF));
-                    header.setTamanoKS(((v2Extra[8] & 0xFF) << 8) | (v2Extra[9] & 0xFF));
-                    */
+                    
+                    // Leer tamaños de segmentos en orden: CS, DS, ES, SS, KS
+                    int tamanoCS = mascara2bytes(v2Extra[0], v2Extra[1]);
+                    int tamanoDS = mascara2bytes(v2Extra[2], v2Extra[3]);
+                    int tamanoES = mascara2bytes(v2Extra[4], v2Extra[5]);
+                    int tamanoSS = mascara2bytes(v2Extra[6], v2Extra[7]);
+                    int tamanoKS = mascara2bytes(v2Extra[8], v2Extra[9]);
+                    
+                    // Agregar segmentos en orden
+                    header.agregarSegmento("CS", tamanoCS);
+                    header.agregarSegmento("DS", tamanoDS);
+                    header.agregarSegmento("ES", tamanoES);
+                    header.agregarSegmento("SS", tamanoSS);
+                    header.agregarSegmento("KS", tamanoKS);
+                    
                     header.setEntryPoint(mascara2bytes(v2Extra[10], v2Extra[11]));
                 } else {
                     throw new IOException("Version de .vmx no soportada: " + version);
@@ -196,13 +207,59 @@ public class Main {
             bytesLeidos++;
         }
     }
-    private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV) throws IOException { //en V2 se llama con el tamano del CS
-        int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); //TODO
-        int byteLeido;
-        int limite = MV.getTabla().getSegmento("CS").getTamanio(); 
-        while (ptrCS < limite && (byteLeido = fis.read()) != -1) {
-            MV.getMemoria().cargarByteAMemoria((byte)byteLeido, ptrCS);
-            ptrCS++;
+    private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV) throws IOException {
+        // Estructura auxiliar para almacenar temporalmente los segmentos
+        HashMap<String, byte[]> segmentosTemp = new HashMap<>();
+        
+        // Leemos el CS (Code Segment) del archivo
+        DescriptorSegmento segmentoCS = MV.getTabla().getSegmento("CS");
+        if (segmentoCS != null) {
+            byte[] contenidoCS = new byte[segmentoCS.getTamanio()];
+            int bytesLeidos = 0;
+            int byteLeido;
+            
+            while (bytesLeidos < segmentoCS.getTamanio() && (byteLeido = fis.read()) != -1) {
+                contenidoCS[bytesLeidos] = (byte)byteLeido;
+                bytesLeidos++;
+            }
+            segmentosTemp.put("CS", contenidoCS);
+        }
+        
+        // Leemos el KS (Const Segment) del archivo
+        DescriptorSegmento segmentoKS = MV.getTabla().getSegmento("KS");
+        if (segmentoKS != null) {
+            byte[] contenidoKS = new byte[segmentoKS.getTamanio()];
+            int bytesLeidos = 0;
+            int byteLeido;
+            
+            while (bytesLeidos < segmentoKS.getTamanio() && (byteLeido = fis.read()) != -1) {
+                contenidoKS[bytesLeidos] = (byte)byteLeido;
+                bytesLeidos++;
+            }
+            segmentosTemp.put("KS", contenidoKS);
+        }
+        
+        // Ahora cargamos en memoria en el orden correcto
+        String[] ordenSegmentos = {"PS", "KS", "CS", "DS", "ES", "SS"};
+        
+        for (String nombreSegmento : ordenSegmentos) {
+            DescriptorSegmento segmento = MV.getTabla().getSegmento(nombreSegmento);
+            if (segmento != null && segmento.getTamanio() > 0) {
+                int ptr = MV.getMemoria().getDireccionFisica(MV.getRegistros().getRegistro(nombreSegmento));
+                
+                if (segmentosTemp.containsKey(nombreSegmento)) {
+                    // Si tenemos contenido del archivo, lo copiamos
+                    byte[] contenido = segmentosTemp.get(nombreSegmento);
+                    for (int i = 0; i < contenido.length; i++) {
+                        MV.getMemoria().cargarByteAMemoria(contenido[i], ptr + i);
+                    }
+                } else {
+                    // Para los demás segmentos, inicializamos con ceros
+                    for (int i = 0; i < segmento.getTamanio(); i++) {
+                        MV.getMemoria().cargarByteAMemoria((byte)0, ptr + i);
+                    }
+                }
+            }
         }
     }
    
@@ -353,8 +410,18 @@ public class Main {
         }
     }
 
-
-    
+    private static void ejecutarDisassemblerV2(MaquinaVirtual MV, int tamanoCodigo) {
+        int i = 0, bytesInstruccion = 1;
+        while (i < tamanoCodigo && bytesInstruccion != -1) {
+            int IP = MV.getRegistros().getIP();
+            byte primerByte = MV.getMemoria().leerPrimerByte(IP);
+            bytesInstruccion = MV.getDissasemblerV2().decodificarInstruccion(primerByte);
+            if (bytesInstruccion > 0) {
+                MV.getRegistros().modificaIP(bytesInstruccion);
+                i += bytesInstruccion;
+            }
+        }
+    }
 
     public static String formatoBinario(int valor) {
         String binario = String.format("%32s", Integer.toBinaryString(valor)).replace(' ', '0');

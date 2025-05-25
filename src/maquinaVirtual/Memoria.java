@@ -129,5 +129,10 @@ public class Memoria implements MemoriaBase {
     public void escribirPila(int direccionLogica,int valor) {
     	throw new IllegalArgumentException("v1 no tiene pila");
     }
+
+	public void escribirByteLogica(int direccionLogica, byte valor) {
+    	int direccionFisica = getDireccionFisica(direccionLogica);
+    	escribirByte(direccionFisica,valor);
+    }
 	
 }
