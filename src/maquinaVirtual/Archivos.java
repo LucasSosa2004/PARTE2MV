@@ -87,12 +87,14 @@ public class Archivos {
             if (loLim == -1) throw new IOException("Descriptor límite incompleto");
             short limite = (short)((hiLim << 8) | (loLim & 0xFF));
 
-            if (limite > base) {
-                String nombre = tabla.getNombreSegmento(i); // "PS", "CS", ...
+            if (limite > 0) {
+                String nombre = tabla.getNombreSegmentoVMI(i); 
                 tabla.agregarSegmento(nombre, base, limite);
             }
         }
 
+        tabla.mostrarTabla();
+        registros.mostrarRegistros();
      
         // memoria
         MemoriaBase memoria = MV.getMemoria();
@@ -106,7 +108,7 @@ public class Archivos {
         }
         System.out.println("DIR: "+ direccionBase);
         while (offset < memoriaKiB && (readByte = fis.read()) != -1) {
-            memoria.escribirByte(direccionBase + offset, (byte)readByte);
+            memoria.escribirByte(offset, (byte)readByte);
             offset++;
         }
     }
@@ -136,15 +138,16 @@ public class Archivos {
             // Tabla de segmentos (PS, CS, DS, ES, SS, KS)
             int j=0;
             for (int i = 0; i < 8; i++) {
-            	String nombre = tabla.getNombreSegmento(i);
+            	String nombre = tabla.getNombreSegmentoVMI(i);
             	DescriptorSegmento segmento = tabla.getSegmento(j); // puede ser null
                 short base = 0;
                 short limite = 0;
                 if(segmento != null && segmento.getNombre().equals(nombre)) {
             		base = segmento.getBase();
-            		limite = segmento.getLimite();
+            		limite = segmento.getTamanio();
             		j++;
                 }
+                System.out.println("VMI"+base +" "+ limite);
                 fos.write((base >> 8) & 0xFF);
                 fos.write(base & 0xFF);
                 fos.write((limite >> 8) & 0xFF);

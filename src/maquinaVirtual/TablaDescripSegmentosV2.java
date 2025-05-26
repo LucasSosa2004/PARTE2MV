@@ -31,7 +31,7 @@ public class TablaDescripSegmentosV2 {
         if (index < 0 || index >= tabla.size()) {
             throw new IndexOutOfBoundsException("Indice invalido en tabla de descriptores: " + index);
         }
-        return tabla.get(index).getLimite();
+        return tabla.get(index).getTamanio();
     }
 
     public String getNombreSegmento(int index) {
@@ -45,6 +45,17 @@ public class TablaDescripSegmentosV2 {
             default: return "???";
         }
     }    
+    public String getNombreSegmentoVMI(int index) {
+        switch (index) {
+        case 0: return "PS";
+        case 1: return "KS";
+        case 2: return "CS";
+        case 3: return "DS";
+        case 4: return "ES";
+        case 5: return "SS";
+        default: return "???";
+    }
+    }
     
     public void agregarSegmento(String segmento, short base, short limite) {
         tabla.add(new DescriptorSegmento(segmento,base,limite));
@@ -52,14 +63,30 @@ public class TablaDescripSegmentosV2 {
 
     public void setTabla(HeaderMV header) {
         ArrayList<DescriptorSegmento> segmentos = header.getSegmentos();
-        HashMap<String, DescriptorSegmento> segmentosMap = new HashMap<>();
+        //HashMap<String, DescriptorSegmento> segmentosMap = new HashMap<>();
 
+        
+        for(DescriptorSegmento segmento : segmentos) {
+        	if (segmento != null && segmento.getTamanio()>0) {
+                short base = 0;
+                if(!(tabla.isEmpty())) {
+                    DescriptorSegmento anterior = tabla.getLast();    				
+                    base = (short)(anterior.getBase() + anterior.getTamanio() +  1);    				
+                }
+
+                agregarSegmento(segmento.getNombre(), base, segmento.getTamanio());
+            }
+        }
+        mostrarTabla();
+        
+        /*
         // Primero guardamos todos los segmentos en un mapa
         for (DescriptorSegmento segmento : segmentos) {
             if(segmento.getTamanio() > 0) {
                 segmentosMap.put(segmento.getNombre(), segmento);
             }
         }
+        
 
         // Definimos el orden deseado
         String[] ordenSegmentos = {"PS", "KS", "CS", "DS", "ES", "SS"};
@@ -71,12 +98,12 @@ public class TablaDescripSegmentosV2 {
                 short base = 0;
                 if(!(tabla.isEmpty())) {
                     DescriptorSegmento anterior = tabla.getLast();    				
-                    base = (short)(anterior.getLimite() + 1);    				
+                    base = (short)(anterior.getBase() + anterior.getTamanio() +  1);    				
                 }
-                short limite = (short)(base + segmento.getTamanio());
+                short limite = (short)(segmento.getTamanio());
                 agregarSegmento(segmento.getNombre(), base, limite);
             }
-        }
+        }*/
     }
     
     public DescriptorSegmento getSegmento(String segmento) {
@@ -98,29 +125,37 @@ public class TablaDescripSegmentosV2 {
 
     public int inincializarRegistro(String registro) {
 		DescriptorSegmento segmento = getSegmento(registro);
+		
+		int hayPS=0;
+
+		if(tabla.get(0).getNombre() == "PS") {
+			hayPS = -1;
+		}
+			
 		if(segmento == null) 
 			return -1;
 		else {
-			short base = (short) getIndice(registro);
+			System.out.println(registro + getBaseLogica(registro));
+			short base = (short) (getBaseLogica(registro));
 			return (int) base << 16;
 		}
 	}
     
     public int inicializarSP() {	
-    	int SS = getIndice("SS");
+    	int SS = getBaseLogica("SS");
     	int offset = getSegmento("SS").getTamanio();
-    	return ((SS << 16) | offset) + 1;
+    	return ((SS << 16) | offset) +1;
     }
     
     
     public void mostrarTabla() {
 
     	for(DescriptorSegmento i: tabla) {
-    		System.out.println(i.getNombre() + " : "+ i.getBase() + " - " +i.getLimite());
+    		System.out.println(i.getNombre() + " : "+ i.getBase() + " - " +i.getTamanio());
     	}
     }
     
-    //se tiene que usar en un segmento siguiente al code segment
+    //se tiene que usar en un segmento siguiente al PS
     public DescriptorSegmento getAnterior(String segmento) {
     	try {
     		int i = getIndice(segmento);
@@ -135,6 +170,17 @@ public class TablaDescripSegmentosV2 {
     	return tabla.indexOf(getSegmento(segmento));
     }
     
+    public int getBaseLogica(String segmento) {
+		int hayPS=0;
+		
+		if(tabla.get(0).getNombre() == "PS") {
+			hayPS = -1;
+		}
+		return getIndice(segmento) + hayPS;	
+    }
+    
+
+    
     public int getCantidadSegmentos() {
         return tabla.size();
     }
@@ -142,7 +188,9 @@ public class TablaDescripSegmentosV2 {
     public ArrayList<DescriptorSegmento> getSegmentos(){
     	return this.tabla;
     }
-    
+    public int getBaseFisica(int segmento) {
+    	return getBase(segmento);
+    }
     
     public String getSegmentoDirFisica(int direccionFisica) {
         int i = 0;

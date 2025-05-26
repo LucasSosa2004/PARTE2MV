@@ -76,7 +76,7 @@ public class Main {
 
 	                MV.getTabla().mostrarTabla();
 	                MV.getRegistros().mostrarRegistros();
-	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getLimite()-30,32);
+	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getTamanio()-30,32);
 	                
 	                if (disassemblerMode) {
 	                    disV2.mostrarCadenas();  // Primero mostrar cadenas
@@ -106,7 +106,7 @@ public class Main {
             }
             else { // no vmx pero si vmi
             	int tamMemoria = memoriaKiB * 1024;
-            	MV = new MaquinaVirtual(parametrosPrograma,tamMemoria,archivos,disassemblerMode);
+            	MV = new MaquinaVirtual(parametrosPrograma,tamMemoria,archivos,false);
             	if (archivos.tieneVMI()) {
                     archivos.cargarEnMV(MV); 
                     MV.getUnidadAritmeticoLogica().cargarMain(parametrosPrograma);
@@ -159,11 +159,11 @@ public class Main {
                     if (fis.read(v2Extra) != v2Extra.length) {
                         throw new IOException("Header .vmx v2 incompleto.");
                     }
+                    header.agregarSegmento("KS", mascara2bytes(v2Extra[8], v2Extra[9]));
                     header.agregarSegmento("CS", mascara2bytes(v2Extra[0], v2Extra[1]));
                     header.agregarSegmento("DS", mascara2bytes(v2Extra[2], v2Extra[3]));
                     header.agregarSegmento("ES", mascara2bytes(v2Extra[4], v2Extra[5]));
                     header.agregarSegmento("SS", mascara2bytes(v2Extra[6], v2Extra[7]));
-                    header.agregarSegmento("KS", mascara2bytes(v2Extra[8], v2Extra[9]));
                     /*
                     header.setTamanoCS(((v2Extra[0] & 0xFF) << 8) | (v2Extra[1] & 0xFF));
                     header.setTamanoDS(((v2Extra[2] & 0xFF) << 8) | (v2Extra[3] & 0xFF));

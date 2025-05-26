@@ -31,7 +31,6 @@ public class DisassemblerV2 {
 //        String segmentoActual = tabla.getSegmentoDirFisica(registros.getDirFisicaIP());
 
         int ipFisica = registros.getIP();
-        System.out.println("IP física: " + ipFisica);
         String segmentoActual = tabla.getSegmentoDirFisica(ipFisica);
         if (segmentoActual == null) {
             throw new IllegalStateException("No se encontró segmento para IP física: " + ipFisica);
@@ -103,9 +102,8 @@ public class DisassemblerV2 {
 
         // Imprimir la instrucción con información del segmento y entry point
         String entryPointMark = (registros.getIP() == entryPoint) ? "> " : "  ";
-        System.out.printf("%s[%s:%04X] %-20s | %s\n", 
+        System.out.printf("%s[%04X] %-20s | %s\n", 
                 entryPointMark,
-                segmentoActual, 
                 offset, 
                 instHexa, 
                 lineaDissasembler);
@@ -118,7 +116,7 @@ public class DisassemblerV2 {
         if (segmentoKS == null) return;
 
         int base = segmentoKS.getBase();
-        int limite = segmentoKS.getLimite();
+        int limite = segmentoKS.getTamanio();
         int pos = base;
 
         while (pos < limite) {
@@ -280,7 +278,7 @@ public class DisassemblerV2 {
         if (segmentoCS == null) return;
 
         int baseCS = segmentoCS.getBase();
-        int limiteCS = segmentoCS.getLimite();
+        int limiteCS = segmentoCS.getTamanio();
         int ip = baseCS;
 
         while (ip < limiteCS) {

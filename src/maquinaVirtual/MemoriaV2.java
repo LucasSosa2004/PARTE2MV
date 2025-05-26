@@ -90,9 +90,10 @@ public class MemoriaV2 implements MemoriaBase {
  
     public int leerPila(int direccionLogica) {
         int direccionFisica = getDireccionFisica(direccionLogica);
+        
+        DescriptorSegmento segmento = tabla.getSegmento("SS");
 
-
-        if (direccionFisica + 3 > tabla.getSegmento("SS").getLimite()) {
+        if (segmento == null || direccionFisica + 3 > segmento.getBase()+segmento.getTamanio()) {
             throw new IndexOutOfBoundsException("Stack Underflow");
         }
 
@@ -123,7 +124,7 @@ public class MemoriaV2 implements MemoriaBase {
     public int getDireccionFisica(int direccionLogica) {
         short segmento = (short) (direccionLogica >>> 16);
         short offset = (short) direccionLogica;
-        int base = tabla.getBase(segmento);
+        int base = tabla.getBaseFisica(segmento);
         return base + offset;
     }
     

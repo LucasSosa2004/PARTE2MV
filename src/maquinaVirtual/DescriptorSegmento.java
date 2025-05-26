@@ -2,19 +2,18 @@ package maquinaVirtual;
 
 public class DescriptorSegmento {
 	private String nombre;
-	private short base,limite;
-	private int tamanio;
+	private short base;
+	private short tamanio;
 	
-	public DescriptorSegmento(String nombre, int tamanio) {
+	public DescriptorSegmento(String nombre, short tamanio) {
 		this.nombre = nombre;
 		this.tamanio = tamanio;
 	}
 	
-	public DescriptorSegmento(String nombre, short base,short limite) {
+	public DescriptorSegmento(String nombre, short base,short tamanio) {
 		this.base = base;
-		this.limite = limite;
 		this.nombre = nombre;
-		this.tamanio = limite - base;
+		this.tamanio = tamanio;
 	}
 
 	
@@ -23,10 +22,10 @@ public class DescriptorSegmento {
 	}
 
 
-	public void seTamanio(int tamanio) {
+	public void setTamanio(short tamanio) {
 		this.tamanio = tamanio;
 	}
-	public int getTamanio() {
+	public short getTamanio() {
 		return this.tamanio;
 	}
 	
@@ -42,17 +41,10 @@ public class DescriptorSegmento {
 		this.base = base;
 	}
 
-	public short getLimite() {
-		return limite;
-	}
-
-	public void setLimite(short limite) {
-		this.limite= limite;
-	}
 
 	@Override
 	public String toString() {
-		return "DescriptorSegmento [nombre=" + nombre + ", base=" + base + ", limite=" + limite + ", tamanio=" + tamanio
+		return "DescriptorSegmento [nombre=" + nombre + ", base=" + base + ", tamanio=" + tamanio
 				+ "]";
 	}
 

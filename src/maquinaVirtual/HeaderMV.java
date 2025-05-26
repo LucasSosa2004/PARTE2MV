@@ -76,7 +76,7 @@ public class HeaderMV {
 
     // Setters
     public void agregarSegmento(String segmento, int tamanio) {
-    	segmentos.add(new DescriptorSegmento(segmento,tamanio));
+    	segmentos.add(new DescriptorSegmento(segmento,(short)tamanio));
     }
     
     public void setTamanoCodigov1(int tamanoCodigov1) {
