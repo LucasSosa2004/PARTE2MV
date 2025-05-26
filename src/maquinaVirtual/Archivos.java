@@ -74,7 +74,7 @@ public class Archivos {
         }
 
         // tabla
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 8; i++) {
             // 2 bytes base
             int hiBase = fis.read();
             int loBase = fis.read();
@@ -135,7 +135,7 @@ public class Archivos {
 
             // Tabla de segmentos (PS, CS, DS, ES, SS, KS)
             int j=0;
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 8; i++) {
             	String nombre = tabla.getNombreSegmento(i);
             	DescriptorSegmento segmento = tabla.getSegmento(j); // puede ser null
                 short base = 0;

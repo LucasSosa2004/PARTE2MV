@@ -182,6 +182,26 @@ public class MemoriaV2 implements MemoriaBase {
         return valor;
     }
     
+    /*
+     * private int reconstruirValor(int direccionFisica, int cantidadBytes, boolean extenderSigno) {
+    int valor = 0;
+    for (int i = 0; i < cantidadBytes; i++) {
+        valor = (valor << 8) | (memoria[direccionFisica + i] & 0xFF);
+    }
+    if (extenderSigno && cantidadBytes < 4) {
+        int shift = (4 - cantidadBytes) * 8;
+        valor = (valor << shift) >> shift;
+    }
+    return valor;
+}
+
+public int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadBytes) {
+    int direccionFisica = getDireccionFisica(direccionLogica) + bytesYaLeidos;
+    return reconstruirValor(direccionFisica, cantidadBytes, true);
+}
+
+     * */
+    
     public void escribirPila(int direccionLogica,int valor) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
         memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
@@ -192,15 +212,35 @@ public class MemoriaV2 implements MemoriaBase {
 
     
     @Override
-    public void escribirOperando(int direccionLogica, int valor) {
+    public void escribirOperando(int direccionLogica, int valor,int cantBytes) {
         int direccionFisica = getDireccionFisica(direccionLogica);
-        //int tamanio = valor & 0b11; esto no va aca
-        //tamanio = 4 - tamanio;
-
-        for (int i = 0; i < 4; i++) {
-            memoria[direccionFisica + i] = (byte) ((valor >> ((4 - 1 - i) * 8)) & 0xFF);
+        
+	    if (direccionFisica < 0 || direccionFisica + cantBytes >= tamanoMemoria) {
+	        throw new IllegalArgumentException("Direccion fuera de los limites de la memoria: " + direccionFisica);
+	    }
+	    System.out.println("cantBytes"+ cantBytes);
+        for (int i = 0; i < cantBytes; i++) {
+        	int byteActual = ((valor >> ((4 - 1 - i) * 8)) & 0xFF);
+            memoria[direccionFisica + i] = (byte) byteActual;
+            System.out.println("escribiendo en "+ (direccionFisica+i)+": "+ byteActual);
         }
     }
+    
+	public void escribirOperando(int direccionLogica, int valor) {
+		
+	    int direccionFisica = getDireccionFisica(direccionLogica);
+	    
+	    // Validar que se disponga de 4 bytes a partir de la direccion fisica en memoria
+	    if (direccionFisica < 0 || direccionFisica + 3 >= tamanoMemoria) {
+	        throw new IllegalArgumentException("Direccion fuera de los limites de la memoria: " + direccionFisica);
+	    }
+	    
+	    // Escribir el valor en memoria
+	    memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
+	    memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
+	    memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
+	    memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
+	}
 
     /*
     public void escribirOperando(int direccionLogica, int valor) {

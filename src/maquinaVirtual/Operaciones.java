@@ -622,11 +622,12 @@ public class Operaciones {
                 String nombreReg = registros.getNombreRegistro(codRegistro);
                 int punteroAlmacenado = registros.getRegistro(nombreReg);
                 int offsetExtra = operandoDestino >> 8 & 0xFF;
-                //int offsetExtra = (byte) (operandoDestino >> 8); 
-
+		        int cantBytes = operandoDestino & 0x3;
+		        cantBytes = 4 - cantBytes;
+		        
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
 
-                memoria.escribirOperando(dirLogicaFinal, valor); 
+                memoria.escribirOperando(dirLogicaFinal, valor,cantBytes); 
                 cantBytesOperacion = 4;
                 break;
             default:

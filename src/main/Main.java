@@ -95,8 +95,6 @@ public class Main {
 	            }else {
 	            	if (!archivos.tieneVMI()){
 	            		ejecutarPrograma(MV);
-	            		MV.getRegistros().mostrarRegistros();
-	            		MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("ES").getBase(),50);
 	            	}
 	            	else{
 	            		ejecutarEnDebug(MV, archivos);

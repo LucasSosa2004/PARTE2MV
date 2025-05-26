@@ -101,6 +101,17 @@ public class Memoria implements MemoriaBase {
 	    memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
 	}
 	
+    public void escribirOperando(int direccionLogica, int valor,int cantBytes) {
+        int direccionFisica = getDireccionFisica(direccionLogica);
+	    cantBytes = 4;
+        if (direccionFisica < 0 || direccionFisica + cantBytes >= kib) {
+	        throw new IllegalArgumentException("Direccion fuera de los limites de la memoria: " + direccionFisica);
+	    }
+	    
+        for (int i = 0; i < cantBytes; i++) {
+            memoria[direccionFisica + i] = (byte) ((valor >> ((4 - 1 - i) * 8)) & 0xFF);
+        }
+    }
 	
 	public int agregarOffset(int direccionLogica, int offsetAdicional) {
 	    int offset = (direccionLogica & 0xFFFF) + offsetAdicional; // Extraer solo el offset (los 16 bits bajos)
