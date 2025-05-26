@@ -76,7 +76,7 @@ public class Main {
 
 	                MV.getTabla().mostrarTabla();
 	                MV.getRegistros().mostrarRegistros();
-	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getTamanio()-30,32);
+	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("DS").getBase()-30,32);
 	                
 	                if (disassemblerMode) {
 	                    disV2.mostrarCadenas();  // Primero mostrar cadenas
@@ -207,7 +207,7 @@ public class Main {
     private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV) throws IOException { //en V2 se llama con el tamano del CS
         int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); //TODO
         int byteLeido;
-        int limite = MV.getTabla().getSegmento("CS").getTamanio(); 
+        int limite = MV.getTabla().getSegmento("CS").getTamanio() + MV.getTabla().getSegmento("CS").getBase() ; 
         while (ptrCS < limite && (byteLeido = fis.read()) != -1) {
             MV.getMemoria().cargarByteAMemoria((byte)byteLeido, ptrCS);
             ptrCS++;

@@ -112,6 +112,19 @@ public class Registros {
         return memoria.getDireccionFisica(ipLogico);
     }
     
+    //busca el registro con base logica base
+    public String buscarBaseEnRegistros(int base){
+    	String[] registrosConSegmento = {"CS","DS","ES","SS","KS"};
+    	String resultado="";
+    	for(String registro:registrosConSegmento) {
+    		int valorRegistro = getRegistro(registro);
+    		System.out.println(base + registro);
+    		if(base == valorRegistro>>>16) {
+    			resultado = registro;
+    		}
+    	}
+    	return resultado;
+    }
 
    public int leerSectorRegistro(int operando) {
 

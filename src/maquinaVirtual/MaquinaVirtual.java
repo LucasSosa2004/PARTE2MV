@@ -105,7 +105,9 @@ public class MaquinaVirtual {
         }
         else {
         	DescriptorSegmento CS = tablaV2.getSegmento("CS");
-        	int finCS = this.memoria.getDireccionFisica(tablaV2.getBaseLogica("CS") + CS.getTamanio());
+        	int direccionFisica = tablaV2.getIndice("CS") << 16;
+        	direccionFisica +=  CS.getTamanio();
+        	int finCS = this.memoria.getDireccionFisica(direccionFisica);
         	return IPdirFisica > finCS;
         }
         

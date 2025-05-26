@@ -88,7 +88,7 @@ public class Archivos {
             short limite = (short)((hiLim << 8) | (loLim & 0xFF));
 
             if (limite > 0) {
-                String nombre = tabla.getNombreSegmentoVMI(i); 
+                String nombre = registros.buscarBaseEnRegistros(i);
                 tabla.agregarSegmento(nombre, base, limite);
             }
         }
@@ -136,6 +136,22 @@ public class Archivos {
             }
 
             // Tabla de segmentos (PS, CS, DS, ES, SS, KS)
+            for(int i=0;i<8;i++) {
+            	DescriptorSegmento segmento = tabla.getSegmento(i);
+                short base = 0;
+                short limite = 0;
+                if(segmento != null) {
+            		base = segmento.getBase();
+            		limite = segmento.getTamanio();
+                }
+                System.out.println("VMI"+base +" "+ limite);
+                fos.write((base >> 8) & 0xFF);
+                fos.write(base & 0xFF);
+                fos.write((limite >> 8) & 0xFF);
+                fos.write(limite & 0xFF);
+                
+            }
+            /*
             int j=0;
             for (int i = 0; i < 8; i++) {
             	String nombre = tabla.getNombreSegmentoVMI(i);
@@ -152,7 +168,7 @@ public class Archivos {
                 fos.write(base & 0xFF);
                 fos.write((limite >> 8) & 0xFF);
                 fos.write(limite & 0xFF);
-            }
+            }*/
 
             byte[] mem = memoria.getMemoriaRaw();
             fos.write(mem);

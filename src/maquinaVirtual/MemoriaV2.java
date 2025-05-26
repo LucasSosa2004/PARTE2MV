@@ -92,8 +92,8 @@ public class MemoriaV2 implements MemoriaBase {
         int direccionFisica = getDireccionFisica(direccionLogica);
         
         DescriptorSegmento segmento = tabla.getSegmento("SS");
-
-        if (segmento == null || direccionFisica + 3 > segmento.getBase()+segmento.getTamanio()) {
+        
+        if (segmento == null || direccionFisica + 3 > segmento.getBase() + segmento.getTamanio()) {
             throw new IndexOutOfBoundsException("Stack Underflow");
         }
 
@@ -124,7 +124,7 @@ public class MemoriaV2 implements MemoriaBase {
     public int getDireccionFisica(int direccionLogica) {
         short segmento = (short) (direccionLogica >>> 16);
         short offset = (short) direccionLogica;
-        int base = tabla.getBaseFisica(segmento);
+        int base = tabla.getBase(segmento);
         return base + offset;
     }
     

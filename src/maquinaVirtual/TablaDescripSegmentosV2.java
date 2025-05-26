@@ -27,6 +27,7 @@ public class TablaDescripSegmentosV2 {
         return tabla.get(index).getBase();
     }
 
+
     public int getLimite(int index) {
         if (index < 0 || index >= tabla.size()) {
             throw new IndexOutOfBoundsException("Indice invalido en tabla de descriptores: " + index);
@@ -135,16 +136,19 @@ public class TablaDescripSegmentosV2 {
 		if(segmento == null) 
 			return -1;
 		else {
-			System.out.println(registro + getBaseLogica(registro));
-			short base = (short) (getBaseLogica(registro));
+			System.out.println(registro + getIndice(registro));
+			short base = (short) (getIndice(registro));
 			return (int) base << 16;
 		}
 	}
     
     public int inicializarSP() {	
-    	int SS = getBaseLogica("SS");
-    	int offset = getSegmento("SS").getTamanio();
-    	return ((SS << 16) | offset) +1;
+    	int SS = getIndice("SS");
+    	if(SS>0) {
+    		int offset = getSegmento("SS").getTamanio();
+    		return ((SS << 16) | offset) +1;    		
+    	}
+    	else return -1;
     }
     
     
@@ -169,16 +173,7 @@ public class TablaDescripSegmentosV2 {
     public int getIndice(String segmento) {
     	return tabla.indexOf(getSegmento(segmento));
     }
-    
-    public int getBaseLogica(String segmento) {
-		int hayPS=0;
-		
-		if(tabla.get(0).getNombre() == "PS") {
-			hayPS = -1;
-		}
-		return getIndice(segmento) + hayPS;	
-    }
-    
+
 
     
     public int getCantidadSegmentos() {
