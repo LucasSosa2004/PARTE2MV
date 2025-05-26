@@ -46,35 +46,30 @@ public class TablaDescripSegmentosV2 {
         }
     }    
     
-    public void agregarSegmento(String segmento, short base, short limite) {
-        tabla.add(new DescriptorSegmento(segmento,base,limite));
+    public void agregarSegmento(String segmento, short base, short tamanio) {
+        tabla.add(new DescriptorSegmento(segmento, base, tamanio));
     }
 
     public void setTabla(HeaderMV header) {
         ArrayList<DescriptorSegmento> segmentos = header.getSegmentos();
         HashMap<String, DescriptorSegmento> segmentosMap = new HashMap<>();
 
-        // Primero guardamos todos los segmentos en un mapa
         for (DescriptorSegmento segmento : segmentos) {
             if(segmento.getTamanio() > 0) {
                 segmentosMap.put(segmento.getNombre(), segmento);
             }
         }
 
-        // Definimos el orden deseado
+        // Orden correcto según la especificación
         String[] ordenSegmentos = {"PS", "KS", "CS", "DS", "ES", "SS"};
 
-        // Cargamos los segmentos en el orden especificado
+        short base = 0;
         for (String nombreSegmento : ordenSegmentos) {
             DescriptorSegmento segmento = segmentosMap.get(nombreSegmento);
             if (segmento != null) {
-                short base = 0;
-                if(!(tabla.isEmpty())) {
-                    DescriptorSegmento anterior = tabla.getLast();    				
-                    base = (short)(anterior.getLimite() + 1);    				
-                }
-                short limite = (short)(base + segmento.getTamanio());
-                agregarSegmento(segmento.getNombre(), base, limite);
+                short tamanio = (short) segmento.getTamanio();
+                agregarSegmento(nombreSegmento, base, tamanio);
+                base += tamanio;
             }
         }
     }

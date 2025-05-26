@@ -142,7 +142,7 @@ public class Archivos {
                 short limite = 0;
                 if(segmento != null && segmento.getNombre().equals(nombre)) {
             		base = segmento.getBase();
-            		limite = segmento.getLimite();
+            		limite = (short) segmento.getLimite();
             		j++;
                 }
                 fos.write((base >> 8) & 0xFF);
