@@ -396,6 +396,8 @@ public class Operaciones {
 	public void CALL(byte tipoOpA, int opA) {
 		byte i=1;//no deja poner cte abajo
 		PUSH(i,0x50);
+		int CS = registros.getCS();
+		opA = CS + opA;
 		JMP(tipoOpA,opA);
 	}
 	

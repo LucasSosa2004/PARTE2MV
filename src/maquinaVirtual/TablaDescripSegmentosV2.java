@@ -126,12 +126,7 @@ public class TablaDescripSegmentosV2 {
 
     public int inincializarRegistro(String registro) {
 		DescriptorSegmento segmento = getSegmento(registro);
-		
-		int hayPS=0;
 
-		if(tabla.get(0).getNombre() == "PS") {
-			hayPS = -1;
-		}
 			
 		if(segmento == null) 
 			return -1;

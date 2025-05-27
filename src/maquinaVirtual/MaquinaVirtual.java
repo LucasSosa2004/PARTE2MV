@@ -108,7 +108,7 @@ public class MaquinaVirtual {
         	int direccionFisica = tablaV2.getIndice("CS") << 16;
         	direccionFisica +=  CS.getTamanio();
         	int finCS = this.memoria.getDireccionFisica(direccionFisica);
-        	return IPdirFisica > finCS;
+        	return IPdirFisica + 1 > finCS;
         }
         
     }

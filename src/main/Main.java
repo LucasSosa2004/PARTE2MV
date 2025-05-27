@@ -76,7 +76,7 @@ public class Main {
 
 	                MV.getTabla().mostrarTabla();
 	                MV.getRegistros().mostrarRegistros();
-	                MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("DS").getBase()-30,32);
+	                //MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("PS").getBase(),32);
 	                
 	                if (disassemblerMode) {
 	                    disV2.mostrarCadenas();  // Primero mostrar cadenas
