@@ -46,10 +46,7 @@ public class UnidadAritmeticoLogica {
             	lineaDissasembler = String.format("%s %s",
             			DissasemblerAux.codOpAMnemonico(codOperacion),
             			DissasemblerAux.decodificarOp(registros, tipoOpA, valorOpA));
-            }
-            	
-            
-                    
+            }        
         } 
 
         else if (codOperacion >= 0x10 && codOperacion <= 0x1E) { //Dos operandos
@@ -86,17 +83,20 @@ public class UnidadAritmeticoLogica {
         } else if(codOperacion == 0x0E){//ret
         	operaciones.RET();
         	this.setJumpEjecutado(true);
-        }else {
-        	
+        }
+        else{
         	bytesYaLeidosInstruccion = -1; // instruccion invalida -> el codigo de operacion no existe
         }
+        
 
-        //System.out.println("PILA:"+Integer.toHexString(memoria.leerPila(registros.getSP())));
-    	if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) { 
+        
+    	if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) {
     		this.registros.modificaIP(bytesYaLeidosInstruccion);                        
+    		//System.out.println(codOperacion +" "+bytesYaLeidosInstruccion +"IP "+ Integer.toHexString(registros.getIP()));
     	} else { //Si hubo salto, el propio salto modifica el valor del IP
     		this.setJumpEjecutado(false);
     	}        	
+    
     	this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
     	if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
     		ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
@@ -104,7 +104,6 @@ public class UnidadAritmeticoLogica {
     	else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
     		ejecutarOperacionDosOperandos(codOperacion, tipoOpA, valorOpA, tipoOpB, valorOpB);
     	}
-    
         
         // Si estamos en modo disassembler, imprimimos la instruccion sin ejecutarla.
         if (testMode) {

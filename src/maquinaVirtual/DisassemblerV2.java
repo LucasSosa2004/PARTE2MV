@@ -116,7 +116,7 @@ public class DisassemblerV2 {
         if (segmentoKS == null) return;
 
         int base = segmentoKS.getBase();
-        int limite = segmentoKS.getTamanio();
+        int limite = base + segmentoKS.getTamanio();
         int pos = base;
 
         while (pos < limite) {
@@ -278,7 +278,7 @@ public class DisassemblerV2 {
         if (segmentoCS == null) return;
 
         int baseCS = segmentoCS.getBase();
-        int limiteCS = segmentoCS.getTamanio();
+        int limiteCS = baseCS + segmentoCS.getTamanio();
         int ip = baseCS;
 
         while (ip < limiteCS) {

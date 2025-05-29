@@ -95,15 +95,16 @@ public class Registros {
     
     /*public void modificaIP(int cantBytes) { //Se recibe la cant bytes que se debe avanzar (Se actualiza solo el offset)
         int ip = getIP();
-        int segmento = ip & 0xFFFF0000;  // Extrae los 16 bits superiores.
-        int offset   = ip & 0x0000FFFF;    // Extrae los 16 bits inferiores.
-        offset = (offset + cantBytes) & 0xFFFF; // Se suma y se restringe a 16 bits.
+        int segmento = ip & 0xFFFF0000;  
+        int offset   = ip & 0x0000FFFF;    
+        offset = (offset + cantBytes) & 0xFFFF; 
         int nuevoIP = segmento | offset;
         setIP(nuevoIP);
     }*/
     public void modificaIP(int cantBytes) {
     	int ip = getIP();
     	ip += cantBytes;
+    	
     	setIP(ip);
     }
     
@@ -118,7 +119,6 @@ public class Registros {
     	String resultado="";
     	for(String registro:registrosConSegmento) {
     		int valorRegistro = getRegistro(registro);
-    		System.out.println(base + registro);
     		if(base == valorRegistro>>>16) {
     			resultado = registro;
     		}

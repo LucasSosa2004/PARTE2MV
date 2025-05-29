@@ -17,6 +17,7 @@ public class Operaciones {
     private boolean jumpEjecutado; 
     TablaDescripSegmentosV2 tabla;
     private Archivos archivos;
+    private final int CS;
 
     public Operaciones(MemoriaBase memoria, Registros registros) {
         this.memoria = memoria;
@@ -24,6 +25,8 @@ public class Operaciones {
         this.jumpEjecutado = false;
         this.tabla = null;
         this.archivos = null;
+        this.CS = 0;
+        
     }
     
     public Operaciones(MemoriaBase memoria, Registros registros, TablaDescripSegmentosV2 tabla,Archivos archivos) {
@@ -31,6 +34,7 @@ public class Operaciones {
     	this.registros = registros;
     	this.tabla = tabla;
     	this.archivos = archivos;
+    	this.CS = tabla.getIndice("CS")<<16;
     }
     
     public void ADD(byte tipoOpA, int opA, byte tipoOpB, int opB) {
@@ -126,8 +130,7 @@ public class Operaciones {
         //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, cociente);
     }
 
-    /*
-    public void CMP(byte tipoOpA, int opA, byte tipoOpB, int opB) {
+/*    public void CMP(byte tipoOpA, int opA, byte tipoOpB, int opB) {
         int valA = obtenerValorOperando(tipoOpA, opA);
         int valB = obtenerValorOperando(tipoOpB, opB);
         int res = valA - valB;
@@ -266,9 +269,8 @@ public class Operaciones {
     public void JMP(byte tipoOpA, int opA) {
         // Obtiene la direccion objetivo (ya sea literal, desde un registro o desde memoria)
         int nuevoIP = obtenerValorOperando(tipoOpA, opA);
-        // Asigna el nuevo valor al puntero de instruccion
-        // Asumiendo que tu clase Registros tiene un metodo setRegistro para "IP":
-        registros.setRegistro("IP", nuevoIP);
+
+        registros.setRegistro("IP", CS +nuevoIP);
     }
     
 
@@ -276,7 +278,7 @@ public class Operaciones {
 	    int cc = registros.getCC();
 	    if ((cc & CERO) != 0) {
 	        int nuevoIP = obtenerValorOperando(tipoOpA, opA);
-	        registros.setRegistro("IP", nuevoIP);
+	        registros.setRegistro("IP", CS + nuevoIP);
 	    }
 	}
 
@@ -287,7 +289,7 @@ public class Operaciones {
 	    if (!neg && !zero) {
 	    	this.setJumpEjecutado(true);
 	        int nuevoIP = obtenerValorOperando(tipoOpA, opA);
-	        registros.setRegistro("IP", nuevoIP);
+	        registros.setRegistro("IP", CS + nuevoIP);
 	    }
 	    else {
 	    	this.setJumpEjecutado(false);
@@ -299,7 +301,7 @@ public class Operaciones {
 	    if ((cc & NEGATIVO) != 0) {
 	    	this.setJumpEjecutado(true);
 	        int nuevoIP = obtenerValorOperando(tipoOpA, opA);
-	        registros.setRegistro("IP", nuevoIP);
+	        registros.setRegistro("IP", CS +nuevoIP);
 	    }
 	    else {
 	    	this.setJumpEjecutado(false);
@@ -312,7 +314,7 @@ public class Operaciones {
 	    if ((CC & CERO) == 0) {
 	    	this.setJumpEjecutado(true);
 	    	int nuevoIP = obtenerValorOperando(tipoOpA, opA);
-	        this.registros.setIP(nuevoIP);
+	        this.registros.setIP(CS +nuevoIP);
 	    }
 	    else {
 	    	this.setJumpEjecutado(false);
@@ -326,7 +328,7 @@ public class Operaciones {
 	    if (neg || zero) {
 	    	this.setJumpEjecutado(true);
 	        int nuevoIP = obtenerValorOperando(tipoOpA, opA);
-	        registros.setRegistro("IP", nuevoIP);
+	        registros.setRegistro("IP", CS +nuevoIP);
 	    }
 	    else {
 	    	this.setJumpEjecutado(false);
@@ -338,7 +340,7 @@ public class Operaciones {
 	    if ((cc & NEGATIVO) == 0) {
 	    	this.setJumpEjecutado(true);
 	        int nuevoIP = obtenerValorOperando(tipoOpA, opA);
-	        registros.setRegistro("IP", nuevoIP);
+	        registros.setRegistro("IP", CS +nuevoIP);
 	    }
 	    else {
 	    	this.setJumpEjecutado(false);
@@ -373,8 +375,9 @@ public class Operaciones {
 			throw new IndexOutOfBoundsException("Stack Overflow");
 		}
 		int val = obtenerValorOperando(tipoOpA,opA);
+		//System.out.println("PUSH"+ Integer.toHexString(val));
 
-		//memoria.imprimirMemoria(tabla.getSegmento("SS").getLimite()-50,51);
+		//memoria.imprimirMemoria(tabla.getSegmento("SS").getBase()+tabla.getSegmento("SS").getTamanio()-50,52);
 		memoria.escribirPila(registros.getSP(),val);
 	}
 
@@ -384,7 +387,7 @@ public class Operaciones {
 			guardarValorEnDestino(tipoOpA,opA,val);
 			int SP = registros.getSP()+4;
 			registros.setSP(SP);
-
+			System.out.println("POP"+ Integer.toHexString(val));
 			//System.out.println("POP "+ val);
 			//memoria.imprimirMemoria(tabla.getSegmento("SS").getLimite()-40,41);
 		}
@@ -395,9 +398,8 @@ public class Operaciones {
 	
 	public void CALL(byte tipoOpA, int opA) {
 		byte i=1;//no deja poner cte abajo
-		PUSH(i,0x50);
-		int CS = registros.getCS();
-		opA = CS + opA;
+		PUSH(i,0x50); //RL IP SE ESTA HACIENDO -1
+		//System.out.println("Call"+ Integer.toHexString(registros.getIP()));		
 		JMP(tipoOpA,opA);
 	}
 	
@@ -489,7 +491,7 @@ public class Operaciones {
 	    		str.append((char)memoria.leerByteLogica(EDX + offset));	
 	    		offset++;
 	    	}
-	    	//str.append(0);
+	    	str.append(0);
 	    	System.out.println(str);
 	    }
 	    else if(modo == 7) {
@@ -628,7 +630,6 @@ public class Operaciones {
 		        cantBytes = 4 - cantBytes;
 		        
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
-
                 memoria.escribirOperando(dirLogicaFinal, valor,cantBytes); 
                 cantBytesOperacion = 4;
                 break;

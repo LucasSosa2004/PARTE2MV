@@ -343,18 +343,18 @@ public class Main {
                     ejecutar = false;
                 }
             }
-
             if (ejecutar) {
-                IP = MV.getRegistros().getIP();
-                primerByte = MV.getMemoria().leerPrimerByte(IP);
-                bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
-                IPcayoSegm = MV.caidaSegmentoIP();
-
-                // breakpoint despues de >>d
-                if (!esperaInput && MV.getUnidadAritmeticoLogica().getBreakPointAnterior()) {
-                    esperaInput = true;
-                }
+            	IP = MV.getRegistros().getIP();
+            	primerByte = MV.getMemoria().leerPrimerByte(IP);
+            	bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
+            	IPcayoSegm = MV.caidaSegmentoIP();
+            	
+            	// breakpoint despues de >>d
+            	if (!esperaInput && MV.getUnidadAritmeticoLogica().getBreakPointAnterior()) {
+            		esperaInput = true;
+            	}
             }
+
         }
 
         if (IPcayoSegm) {

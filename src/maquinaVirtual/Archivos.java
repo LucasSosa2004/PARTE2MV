@@ -89,7 +89,12 @@ public class Archivos {
 
             if (limite > 0) {
                 String nombre = registros.buscarBaseEnRegistros(i);
-                tabla.agregarSegmento(nombre, base, limite);
+                if(i == 0 && !(nombre.equals("CS") || nombre.equals("KS"))) {
+                	tabla.agregarSegmento("PS", base, limite);
+                }
+                else {
+                	tabla.agregarSegmento(nombre, base, limite);
+                }
             }
         }
 
@@ -98,15 +103,7 @@ public class Archivos {
      
         // memoria
         MemoriaBase memoria = MV.getMemoria();
-        int offset = 0;
-        int readByte;
-        int direccionBase = 0;
-        
-        DescriptorSegmento PS = tabla.getSegmento("PS");
-        if(PS != null) {
-        	direccionBase = PS.getTamanio();       	
-        }
-        System.out.println("DIR: "+ direccionBase);
+        int offset = 0,readByte;;
         while (offset < memoriaKiB && (readByte = fis.read()) != -1) {
             memoria.escribirByte(offset, (byte)readByte);
             offset++;

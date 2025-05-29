@@ -97,6 +97,7 @@ public class MaquinaVirtual {
     public boolean caidaSegmentoIP() {
         //Convertir el IP en una dir fisica
         int IP = this.registros.getIP();
+        //registros.mostrarRegistros();
         int IPdirFisica = this.memoria.getDireccionFisica(IP);
         if(tablaV2 == null) {
             int DS = this.registros.getDS();
@@ -105,9 +106,8 @@ public class MaquinaVirtual {
         }
         else {
         	DescriptorSegmento CS = tablaV2.getSegmento("CS");
-        	int direccionFisica = tablaV2.getIndice("CS") << 16;
-        	direccionFisica +=  CS.getTamanio();
-        	int finCS = this.memoria.getDireccionFisica(direccionFisica);
+        	int finCS = CS.getBase()+CS.getTamanio();
+        	//System.out.println(Integer.toHexString(IPdirFisica) +" "+ finCS);
         	return IPdirFisica + 1 > finCS;
         }
         

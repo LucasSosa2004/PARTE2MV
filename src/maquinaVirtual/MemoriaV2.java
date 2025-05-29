@@ -164,6 +164,10 @@ public class MemoriaV2 implements MemoriaBase {
         for (int i = 0; i < cantidadBytes; i++) {
             valor = (valor << 8) | (memoria[direccionFisica + i] & 0xFF);
         }
+        if (cantidadBytes < 4) {
+            int shift = (4 - cantidadBytes) * 8;
+            valor = (valor << shift) >> shift;
+        }
         return valor;
     }
 
@@ -222,8 +226,8 @@ public int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadByte
 	    System.out.println("cantBytes"+ cantBytes);
         for (int i = 0; i < cantBytes; i++) {
         	int byteActual = ((valor >> ((4 - 1 - i) * 8)) & 0xFF);
-            memoria[direccionFisica + i] = (byte) byteActual;
-            System.out.println("escribiendo en "+ (direccionFisica+i)+": "+ byteActual);
+            memoria[direccionFisica + i] = (byte)byteActual;
+            System.out.println("escribiendo en "+ (direccionFisica+i)+": "+ (byte)byteActual);
         }
     }
     
