@@ -17,7 +17,7 @@ public class Operaciones {
     private boolean jumpEjecutado; 
     TablaDescripSegmentosV2 tabla;
     private Archivos archivos;
-    private final int CS;
+    private int CS;
 
     public Operaciones(MemoriaBase memoria, Registros registros) {
         this.memoria = memoria;
@@ -29,12 +29,12 @@ public class Operaciones {
         
     }
     
-    public Operaciones(MemoriaBase memoria, Registros registros, TablaDescripSegmentosV2 tabla,Archivos archivos) {
+    public Operaciones(MemoriaBase memoria, Registros registros, TablaDescripSegmentosV2 tabla,Archivos archivos,int CS) {
     	this.memoria = memoria;
     	this.registros = registros;
     	this.tabla = tabla;
     	this.archivos = archivos;
-    	this.CS = tabla.getIndice("CS")<<16;
+    	this.CS = CS;
     }
     
     public void ADD(byte tipoOpA, int opA, byte tipoOpB, int opB) {
@@ -46,6 +46,9 @@ public class Operaciones {
         //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
     }
     
+    public void setCS(int CS) {
+    	this.CS = CS;
+    }
     public int tamanioOperandoReg(int operando) {
     	int codRegistro = (operando >>> 4) & 0x0F;
     	int sectorRegistro = (operando >>> 2) & 0x03;
@@ -270,6 +273,7 @@ public class Operaciones {
         // Obtiene la direccion objetivo (ya sea literal, desde un registro o desde memoria)
         int nuevoIP = obtenerValorOperando(tipoOpA, opA);
 
+        System.out.println(CS);
         registros.setRegistro("IP", CS +nuevoIP);
     }
     

@@ -22,7 +22,8 @@ public class UnidadAritmeticoLogica {
     public UnidadAritmeticoLogica(Registros registros, MemoriaBase memoria, TablaDescripSegmentosV2 tabla,Archivos archivos, boolean testMode) {
         this.registros = registros;
         this.memoria = memoria;
-        this.operaciones = new Operaciones(memoria, registros, tabla,archivos);
+        int CS = tabla.getIndice("CS")<<16;
+        this.operaciones = new Operaciones(memoria, registros, tabla,archivos,CS);
         this.testMode = testMode;  // Bandera de modo disassembler
     }	
     
@@ -195,6 +196,9 @@ public class UnidadAritmeticoLogica {
 
 	public boolean getBreakPointAnterior() {
         return breakPointAnterior;
+    }
+    public Operaciones getOperaciones() {
+        return operaciones;
     }
 	public void cargarMain(List<String> parametros) {
 		byte PUSH = 11;

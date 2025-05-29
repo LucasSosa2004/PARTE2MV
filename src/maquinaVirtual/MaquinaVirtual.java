@@ -47,7 +47,10 @@ public class MaquinaVirtual {
     
     
 
-
+    public void setCSOperaciones(int CS) {
+        this.unidadAritmeticoLogica.getOperaciones().setCS(CS);
+    }
+    
     public MemoriaBase getMemoria() {
         return this.memoria;
     }

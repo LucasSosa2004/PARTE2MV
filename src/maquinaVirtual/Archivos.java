@@ -100,7 +100,8 @@ public class Archivos {
 
         tabla.mostrarTabla();
         registros.mostrarRegistros();
-     
+        int CS = tabla.getIndice("CS")<<16;
+        MV.setCSOperaciones(CS);
         // memoria
         MemoriaBase memoria = MV.getMemoria();
         int offset = 0,readByte;;
