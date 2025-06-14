@@ -32,7 +32,6 @@ public class Main {
 
             } else if (arg.equals("-d")) {
                 disassemblerMode = true;
-
             } else if (arg.equals("-p") && archivos.tieneVMX()) {
                 for (int j = i + 1; j < args.length; j++) {
                     parametrosPrograma.add(args[j]);
@@ -212,7 +211,7 @@ public class Main {
         int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); //TODO
         int byteLeido;
         int limite = MV.getTabla().getSegmento("CS").getTamanio() + MV.getTabla().getSegmento("CS").getBase() ; 
-        while (ptrCS < limite && (byteLeido = fis.read()) != -1) {
+        while (ptrCS <= limite && (byteLeido = fis.read()) != -1) {
             MV.getMemoria().cargarByteAMemoria((byte)byteLeido, ptrCS);
             ptrCS++;
         }

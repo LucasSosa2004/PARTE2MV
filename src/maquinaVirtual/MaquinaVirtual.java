@@ -111,7 +111,7 @@ public class MaquinaVirtual {
         	DescriptorSegmento CS = tablaV2.getSegmento("CS");
         	int finCS = CS.getBase()+CS.getTamanio();
         	//System.out.println(Integer.toHexString(IPdirFisica) +" "+ finCS);
-        	return IPdirFisica + 1 > finCS;
+        	return IPdirFisica  > finCS;
         }
         
     }

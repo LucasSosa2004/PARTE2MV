@@ -75,7 +75,7 @@ public class TablaDescripSegmentosV2 {
                     base = (short)(anterior.getBase() + anterior.getTamanio()+1);    				
                 }
 
-                agregarSegmento(segmento.getNombre(), base, (short)(segmento.getTamanio()));
+                agregarSegmento(segmento.getNombre(), base, (short)(segmento.getTamanio()-1));
             }
         }
 
