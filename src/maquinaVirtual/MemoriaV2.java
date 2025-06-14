@@ -38,29 +38,37 @@ public class MemoriaV2 implements MemoriaBase {
     private void cargarParametros(List<String> parametros, int offset) {
         int inicioStrings = 0;
         List<Integer> offsets = new ArrayList<>();
-
+        System.out.println("parametro a cargar: "+parametros.get(0));
+        System.out.println("se carga su valor ASCII vinculado. Ej, si es un 8 se carga el 56 ASCII");
         // 1. Escribir strings con terminador '\0'
         int posicionActual = inicioStrings;
         for (String p : parametros) {
+            // Guardar el offset del inicio del string ANTES de escribirlo
+            offsets.add(posicionActual);
+            
             byte[] bytes = p.getBytes();
             System.arraycopy(bytes, 0, memoria, posicionActual, bytes.length);
             posicionActual += bytes.length;
-            memoria[posicionActual++] = 0x00;
-            offsets.add(posicionActual - bytes.length - 1);
+            memoria[posicionActual++] = 0x00; // Terminador '\0'
         }
 
         // 2. Escribir punteros (cada puntero = 4 bytes, 0x0000 + offset)
         for (int offsetStr : offsets) {
+            memoria[posicionActual++] = 0x00; // 16 bits más significativos = 0x0000
             memoria[posicionActual++] = 0x00;
-            memoria[posicionActual++] = 0x00;
-            memoria[posicionActual++] = (byte) ((offsetStr >> 8) & 0xFF);
+            memoria[posicionActual++] = (byte) ((offsetStr >> 8) & 0xFF); // 16 bits menos significativos
             memoria[posicionActual++] = (byte) (offsetStr & 0xFF);
+            System.out.println( ">>8:"+ ((offsetStr >> 8) & 0xFF) + ":"+(offsetStr & 0xFF));
         }
 
-        tabla.agregarSegmento("PS", (short)0, (short)(posicionActual - 1));
-        System.out.println(getTabla().getSegmento(0).toString());
+        // 3. Configurar el segmento en la tabla y el mapa de bases
+        int tamanioSegmento = posicionActual-1; // posicionActual apunta a la siguiente posición libre
+        tabla.agregarSegmento("PS", (short)0, (short)tamanioSegmento);
+        //baseSegmentos.put("PS", 0); // El Param Segment siempre inicia en la dirección física 0x00000000
+        
     }
 
+    /*
     public void cargarSegmentoDesdeArchivo(String segmento, FileInputStream fis, int longitud) throws IOException {
         int base = baseSegmentos.get(segmento);
         for (int i = 0; i < longitud; i++) {
@@ -68,7 +76,7 @@ public class MemoriaV2 implements MemoriaBase {
             if (b == -1) throw new IOException("Archivo incompleto al leer segmento " + segmento);
             memoria[base + i] = (byte) b;
         }
-    }
+    }*/
     
     public void printPosiciones(int inicio, int fin) {
     	for(int i= inicio; i<fin; i++) {
@@ -122,12 +130,21 @@ public class MemoriaV2 implements MemoriaBase {
 
     @Override
     public int getDireccionFisica(int direccionLogica) {
-        short segmento = (short) (direccionLogica >>> 16);
-        short offset = (short) direccionLogica;
+        int segmento = (direccionLogica >>> 16) & 0xFFFF; // sin signo
+        int offset   =  direccionLogica        & 0xFFFF;  // sin signo
+
+        if (segmento >= tabla.getCantidadSegmentos()) {
+            throw new IllegalArgumentException(
+                "Segmento inválido: " + segmento +
+                " para dirección lógica: 0x" + Integer.toHexString(direccionLogica)
+            );
+        }
+
         int base = tabla.getBase(segmento);
+
         return base + offset;
     }
-    
+
     @Override
     public int agregarOffset(int direccionLogica, int offsetAdicional) {
 	    int offset = (direccionLogica & 0xFFFF) + offsetAdicional; // Extraer solo el offset (los 16 bits bajos)
@@ -158,6 +175,7 @@ public class MemoriaV2 implements MemoriaBase {
     }
 
     @Override
+    /*
     public int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadBytes) {
         int direccionFisica = getDireccionFisica(direccionLogica) + bytesYaLeidos;
         int valor = 0;
@@ -170,6 +188,18 @@ public class MemoriaV2 implements MemoriaBase {
         }
         return valor;
     }
+    */
+
+	public int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadBytes) {
+	    int direccionFisica = getDireccionFisica(direccionLogica);
+	    direccionFisica += bytesYaLeidos;
+
+	    int valor = 0;
+	    for (int i = 0; i < cantidadBytes; i++) {
+	        valor = (valor << 8) | (memoria[direccionFisica + i] & 0xFF);
+	    }
+	    return valor;
+	}    
 
     @Override
     public int leerMemoria(int direccionLogica, int cantidadBytes) {
@@ -209,28 +239,76 @@ public int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadByte
     
     public void escribirPila(int direccionLogica,int valor) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
+    	if(direccionFisica < tabla.getSegmento("SS").getBase()) {
+    		throw new IndexOutOfBoundsException("Stack Overflow");
+    	}
+    	
+    	memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
+        memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
+        memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
+        memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
+    }
+    
+    public void escribirPila(int direccionLogica, int valor, int cantBytes) {
+        int direccionFisica = getDireccionFisica(direccionLogica);
+
+        // Extender signo según cantidad de bytes del valor:
+        if (cantBytes == 1) {
+            valor = (byte) valor; // extiende signo a 32 bits
+        } else if (cantBytes == 2) {
+            valor = (short) valor; // extiende signo a 32 bits
+        } else if (cantBytes == 3) {
+            // Extensión de signo para 3 bytes (24 bits)
+            if ((valor & 0x800000) != 0) { // si el bit 23 es 1 (signo negativo)
+                valor |= 0xFF000000; // pone los 8 bits más altos a 1 para extender signo
+            } else {
+                valor &= 0x00FFFFFF; // limpia los 8 bits más altos
+            }
+        }
+        if(direccionFisica < tabla.getSegmento("SS").getBase()) {
+    		throw new IndexOutOfBoundsException("Stack Overflow");
+    	}
+        
         memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
         memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
         memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
         memoria[direccionFisica + 3] = (byte) (valor & 0xFF);
     }
 
+
     
     @Override
+    public void escribirOperando(int direccionLogica, int valor, int cantBytes) {
+        /*System.out.println("ENTROOO A ESCRIBIR OPERANDO");*/
+        int direccionFisica = getDireccionFisica(direccionLogica);
+        /*System.out.println("direccionFisica: "+direccionFisica);
+        System.out.println("valor a guardar "+valor);*/
+        if (direccionFisica < 0 || direccionFisica + 4 > tamanoMemoria) {
+            throw new IllegalArgumentException("Direccion fuera de los limites de la memoria: " + direccionFisica);
+        }
+
+
+        // Escribir desde la direccion física hacia adelante
+        for (int i = 0; i < cantBytes; i++) {
+            int byteActual = (valor >> ((cantBytes - 1 - i) * 8)) & 0xFF;
+            memoria[direccionFisica + i] = (byte) byteActual;
+        }
+    }
+    /*
     public void escribirOperando(int direccionLogica, int valor,int cantBytes) {
         int direccionFisica = getDireccionFisica(direccionLogica);
         
 	    if (direccionFisica < 0 || direccionFisica + cantBytes >= tamanoMemoria) {
 	        throw new IllegalArgumentException("Direccion fuera de los limites de la memoria: " + direccionFisica);
 	    }
-	    System.out.println("cantBytes"+ cantBytes);
+	    //System.out.println("cantBytes"+ cantBytes);
         for (int i = 0; i < cantBytes; i++) {
         	int byteActual = ((valor >> ((4 - 1 - i) * 8)) & 0xFF);
             memoria[direccionFisica + i] = (byte)byteActual;
-            System.out.println("escribiendo en "+ (direccionFisica+i)+": "+ (byte)byteActual);
+            //System.out.println("escribiendo en "+ (direccionFisica+i)+": "+ (byte)byteActual);
         }
     }
-    
+    */
 	public void escribirOperando(int direccionLogica, int valor) {
 		
 	    int direccionFisica = getDireccionFisica(direccionLogica);

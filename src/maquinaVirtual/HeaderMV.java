@@ -148,5 +148,11 @@ public class HeaderMV {
 
         return sb.toString();
     }
+
+    public void motrtrarSegmentos() {
+        for (DescriptorSegmento segmento : segmentos) {
+            System.out.println(segmento.toString());
+        }
+    }
 }
 

@@ -24,4 +24,5 @@ public interface MemoriaBase {
 	    public void escribirPila(int direccionLogica,int valor);
 	    public void escribirByteLogica(int direccionLogica, byte valor);
 	    public void escribirOperando(int direccionLogica, int valor,int cantBytes);
+	    public void escribirPila(int direccionLogica, int valor, int cantBytes);
 }

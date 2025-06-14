@@ -69,20 +69,21 @@ public class Main {
 	                    ejecutarDisassembler(MV, header.getTamanoCodigov1());
 	                }
 	            } else if (header.getVersion() == 2) {
+
 	                int tamMemoria = memoriaKiB * 1024;
 	                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria,archivos,false); // usa MemoriaV2 internamente
+
 	                DisassemblerV2 disV2 = new DisassemblerV2(MV.getRegistros(),MV.getMemoria(),MV.getTabla());
 	                cargarCodigo(fis,MV);
-
-	                MV.getTabla().mostrarTabla();
-	                MV.getRegistros().mostrarRegistros();
-	                //MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("PS").getBase(),32);
-	                
-	                if (disassemblerMode) {
+                    if (disassemblerMode) {
 	                    disV2.mostrarCadenas();  // Primero mostrar cadenas
 	                    disV2.disassembleAll();  // Luego mostrar instrucciones
+	                    
+	                    // Restaurar IP al entry point después del disassembler
+	                    int entryPoint = MV.getTabla().getSegmento("CS").getBase() + header.getEntryPoint();
+	                    MV.getRegistros().setIP(entryPoint);
 	                }
-	                
+                    
 	            } else {
 	                System.err.println("Version de VMX no soportada.");
 	                fis.close();
@@ -91,15 +92,18 @@ public class Main {
 	            
 	            if(disassemblerMode) {
 	            	int tamanoCodigo = header.getTamanoCodigov1();
-	            	ejecutarDisassembler(MV,tamanoCodigo);
-	            }else {
-	            	if (!archivos.tieneVMI()){
-	            		ejecutarPrograma(MV);
-	            	}
-	            	else{
-	            		ejecutarEnDebug(MV, archivos);
-	            	}
+	            	//ejecutarDisassembler(MV,tamanoCodigo);
 	            }
+	            if (!archivos.tieneVMI()){
+	            	MV.getTabla().mostrarTabla();
+	            	System.out.println(Integer.toHexString(MV.getRegistros().getSP()));
+	            	MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("CS").getBase(),485);
+	            	ejecutarPrograma(MV);
+	            }
+	            else{
+	            	ejecutarEnDebug(MV, archivos);
+	            }
+	            
 	            	
 	            	
 	            fis.close();
@@ -212,6 +216,16 @@ public class Main {
             MV.getMemoria().cargarByteAMemoria((byte)byteLeido, ptrCS);
             ptrCS++;
         }
+        
+        // Cargar contenido del KS
+        if (MV.getTabla().getSegmento("KS") != null && MV.getTabla().getSegmento("KS").getTamanio() > 0) {
+            int ptrKS = MV.getTabla().getSegmento("KS").getBase();
+            int limiteKS = MV.getTabla().getSegmento("KS").getTamanio() + MV.getTabla().getSegmento("KS").getBase();
+            while (ptrKS < limiteKS && (byteLeido = fis.read()) != -1) {
+                MV.getMemoria().cargarByteAMemoria((byte)byteLeido, ptrKS);
+                ptrKS++;
+            }
+        }
     }
    
     
@@ -219,55 +233,6 @@ public class Main {
     	return ((pri & 0xFF) << 8) | (seg & 0xFF);    	
     }
     
-    /*
-    private static void inicializarRegistros(MaquinaVirtual MV) {
-        int CS = MV.getRegistros().getCS();
-        MV.getRegistros().setIP(CS);
-    }
-
-    private static void cargarSegmentosV2(FileInputStream fis, MaquinaVirtual MV, HeaderMV header) throws IOException {
-        MV.getMemoria().cargarSegmentoDesdeArchivo("CS", fis, header.getTamanoCS());
-        MV.getMemoria().cargarSegmentoDesdeArchivo("KS", fis, header.getTamanoKS());
-        // DS, ES, SS se reservan pero no tienen contenido en el archivo
-    }
-
-    private static void inicializarRegistrosV2(MaquinaVirtual MV, HeaderMV header) {
-        int ip = MV.getMemoria().getDireccionBaseSegmento("CS") + header.getEntryPoint();
-        MV.getRegistros().setIP(ip);
-        MV.getRegistros().setCS(MV.getMemoria().getDireccionBaseSegmento("CS"));
-        MV.getRegistros().setDS(MV.getMemoria().getDireccionBaseSegmento("DS"));
-        MV.getRegistros().setES(MV.getMemoria().getDireccionBaseSegmento("ES"));
-        MV.getRegistros().setSS(MV.getMemoria().getDireccionBaseSegmento("SS"));
-        MV.getRegistros().setKS(MV.getMemoria().getDireccionBaseSegmento("KS"));
-        MV.getRegistros().setSP(MV.getMemoria().getDireccionBaseSegmento("SS") + header.getTamanoSS());
-    }
-
-
-    private static void cargarImagenVMI(String archivoVMI, MaquinaVirtual MV) throws IOException {
-        try (FileInputStream fis = new FileInputStream(archivoVMI)) {
-            byte[] headerVMI = new byte[8];
-            fis.read(headerVMI);
-            // Leer registros (64 bytes)
-            for (int i = 0; i < 16; i++) {
-                int reg = 0;
-                for (int j = 0; j < 4; j++) {
-                    reg = (reg << 8) | (fis.read() & 0xFF);
-                }
-                MV.getRegistros().setRegistro(i, reg);
-            }
-            // Tabla de descriptores (32 bytes)
-            for (int i = 0; i < 8; i++) {
-                int base = 0, limite = 0;
-                for (int j = 0; j < 2; j++) base = (base << 8) | (fis.read() & 0xFF);
-                for (int j = 0; j < 2; j++) limite = (limite << 8) | (fis.read() & 0xFF);
-                MV.getMemoria().setDescriptor(i, base, limite);
-            }
-            // Memoria principal (resto del archivo)
-            byte[] mem = MV.getMemoria().getMemoriaRaw();
-            fis.read(mem, 0, mem.length);
-        }
-    }
-    */
     private static void ejecutarDisassembler(MaquinaVirtual MV, HeaderMV header) {
         int i = 0, bytesInstruccion = 1;
         while (i < header.getTamanoCodigov1() && bytesInstruccion != -1) {
@@ -297,9 +262,6 @@ public class Main {
         int bytesInstruccion = 1;
         boolean IPcayoSegm = false;
         while (!IPcayoSegm && bytesInstruccion != -1) {
-        	//System.out.println("IP: "+Integer.toHexString(MV.getRegistros().getIP()));
-
-    		//MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("SS").getLimite()-30,32);
         	int IP = MV.getRegistros().getIP();
             byte primerByte = MV.getMemoria().leerPrimerByte(IP);
             bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);

@@ -12,7 +12,7 @@ public class Memoria implements MemoriaBase {
 	}
 	
 	public int getDireccionFisica(int direccionLogica) {
-
+		
 		short segmento = (short)(direccionLogica >> 16);
 		short offset = (short)(direccionLogica);
 		int direccionFisica = 0;
@@ -40,7 +40,9 @@ public class Memoria implements MemoriaBase {
 		
 		this.memoria[posicion] = byteLeido;
 	}
-	
+	public void escribirPila(int direccionLogica, int valor, int cantBytes) {
+		System.out.println("v2 no escribe pila");
+	}
 	public void cargarByte(byte byteACargar, int direccionLogica) {
     	int direccionFisica = getDireccionFisica(direccionLogica);
     	memoria[direccionFisica] = byteACargar;

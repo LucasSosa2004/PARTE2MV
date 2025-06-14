@@ -41,9 +41,8 @@ public class Operaciones {
         int valorA    = obtenerValorOperando(tipoOpA, opA);
         int valorB    = obtenerValorOperando(tipoOpB, opB);
         int resultado = valorA + valorB;
-        // resultado tiene el tamano de tipoOpA
+
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
     }
     
     public void setCS(int CS) {
@@ -133,17 +132,7 @@ public class Operaciones {
         //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, cociente);
     }
 
-/*    public void CMP(byte tipoOpA, int opA, byte tipoOpB, int opB) {
-        int valA = obtenerValorOperando(tipoOpA, opA);
-        int valB = obtenerValorOperando(tipoOpB, opB);
-        int res = valA - valB;
-        System.out.println(valA + " a - b " + valB);
-        System.out.println("CMP" + res);
-        int cc = registros.getCC() & ~(CERO | NEGATIVO);
-        if (res == 0)      cc |= CERO;
-        else if (res < 0)  cc |= NEGATIVO;
-        registros.setCC(cc);
-    }*/
+
     public void CMP(byte tipoOpA, int opA, byte tipoOpB, int opB) {
         int valA = obtenerValorOperando(tipoOpA, opA);
         int valB = obtenerValorOperando(tipoOpB, opB);
@@ -151,6 +140,8 @@ public class Operaciones {
 
         valA = signExtend(valA, tipoOpA);
         valB = signExtend(valB, tipoOpB);
+        
+        
 
         int res = valA - valB;
 
@@ -200,24 +191,27 @@ public class Operaciones {
     }*/
 
     public void OR(byte tipoOpA, int opA, byte tipoOpB, int opB) {
+
+		int valorA = obtenerValorOperando(tipoOpA, opA);
+		int valorB = obtenerValorOperando(tipoOpB, opB);
+
         int resultado = obtenerValorOperando(tipoOpA, opA)
                       | obtenerValorOperando(tipoOpB, opB);
+		
+
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
-    }
+	}
 
     public void XOR(byte tipoOpA, int opA, byte tipoOpB, int opB) {
         int resultado = obtenerValorOperando(tipoOpA, opA)
                       ^ obtenerValorOperando(tipoOpB, opB);
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
     }
 
     public void RND(byte tipoOpA, int opA, byte tipoOpB, int opB) {
         int limite   = obtenerValorOperando(tipoOpB, opB);
         int resultado = new Random().nextInt(limite);
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
     }
 
     public void SWAP(byte tipoOpA, int opA, byte tipoOpB, int opB) {
@@ -228,8 +222,7 @@ public class Operaciones {
         // ojo al orden: el tipoFuente de cada write es el tipo del valor que escribes
         guardarValorEnDestino(tipoOpA, opA, valorB);
         guardarValorEnDestino(tipoOpB, opB, valorA);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, valorB);
-        //guardarValorEnDestino(tipoOpB, opB, tipoOpA, opA, valorA);
+
 
     }
 
@@ -273,7 +266,7 @@ public class Operaciones {
         // Obtiene la direccion objetivo (ya sea literal, desde un registro o desde memoria)
         int nuevoIP = obtenerValorOperando(tipoOpA, opA);
 
-        System.out.println(CS);
+        //System.out.println(CS);
         registros.setRegistro("IP", CS +nuevoIP);
     }
     
@@ -379,10 +372,12 @@ public class Operaciones {
 			throw new IndexOutOfBoundsException("Stack Overflow");
 		}
 		int val = obtenerValorOperando(tipoOpA,opA);
+		int cantBytes = cantBytesLeidos(tipoOpA,opA);
 		//System.out.println("PUSH"+ Integer.toHexString(val));
-
+		System.out.println(cantBytes);
+		
 		//memoria.imprimirMemoria(tabla.getSegmento("SS").getBase()+tabla.getSegmento("SS").getTamanio()-50,52);
-		memoria.escribirPila(registros.getSP(),val);
+		memoria.escribirPila(registros.getSP(),val,cantBytes);
 	}
 
 	public void POP(byte tipoOpA, int opA) {
@@ -391,9 +386,7 @@ public class Operaciones {
 			guardarValorEnDestino(tipoOpA,opA,val);
 			int SP = registros.getSP()+4;
 			registros.setSP(SP);
-			System.out.println("POP"+ Integer.toHexString(val));
-			//System.out.println("POP "+ val);
-			//memoria.imprimirMemoria(tabla.getSegmento("SS").getLimite()-40,41);
+
 		}
 		catch(IndexOutOfBoundsException e) {
 			throw new IndexOutOfBoundsException("Stack Underflow");			
@@ -402,15 +395,27 @@ public class Operaciones {
 	
 	public void CALL(byte tipoOpA, int opA) {
 		byte i=1;//no deja poner cte abajo
-		PUSH(i,0x50); //RL IP SE ESTA HACIENDO -1
-		//System.out.println("Call"+ Integer.toHexString(registros.getIP()));		
-		JMP(tipoOpA,opA);
+		PUSH(i,0x50); 
+		//System.out.println("Call"+ Integer.toHexString(registros.getIP()));	
+		int offset = opA & 0x0000FFFF;
+		registros.setIP(CS+offset);
+		System.out.println("IP: "+ Integer.toHexString(registros.getIP()));
+		//this.setJumpEjecutado(true);
 	}
+
 	
-	public void RET() {
-		byte i=1;
-		POP(i,0x50);
-	}
+    public void RET() {
+        try {
+            int dirRetorno = memoria.leerPila(registros.getSP());
+            registros.setSP(registros.getSP() + 4);
+            registros.setIP(dirRetorno);
+            this.setJumpEjecutado(true); 
+        } catch(IndexOutOfBoundsException e) {
+            throw new IndexOutOfBoundsException("Stack Underflow en RET");
+        }
+    }
+
+
 	
 	public void SYS(byte tipoOpA, int opA) {
 		//System.out.println("entro al sys");
@@ -495,7 +500,6 @@ public class Operaciones {
 	    		str.append((char)memoria.leerByteLogica(EDX + offset));	
 	    		offset++;
 	    	}
-	    	str.append(0);
 	    	System.out.println(str);
 	    }
 	    else if(modo == 7) {
@@ -523,47 +527,7 @@ public class Operaciones {
 		}
 	}
 	public static String formarStringSalida(int formatoOperacion, int dato, int tamanioBytes) {
-	    // 0) Calcular cuantos bytes realmente importan:
-	    //    buscamos el primer 1 de los 32 bits; eso define effectiveBytes.
-	    /*
-		int effectiveBytes;
-	    if (datoRaw == 0) {
-	        effectiveBytes = 1;
-	    } else {
-	        int bitLen = 32 - Integer.numberOfLeadingZeros(datoRaw);
-	        effectiveBytes = ((bitLen - 1) / 8) + 1;
-	    }
-	    // nunca pasarnos de lo que realmente lei
-	    effectiveBytes = Math.min(effectiveBytes, tamanioBytes);
 
-	    // 1) Sign-extend segun effectiveBytes
-	    int datoSigned;
-	    switch (effectiveBytes) {
-	        case 1:
-	            datoSigned = (byte) datoRaw;    // extiende signo de 8 bits
-	            break;
-	        case 2:
-	            datoSigned = (short) datoRaw;   // extiende signo de 16 bits
-	            break;
-	        case 3:
-	            // extiende signo de 24 bits
-	            if ((datoRaw & 0x800000) != 0) {
-	                datoSigned = datoRaw | 0xFF000000;
-	            } else {
-	                datoSigned = datoRaw & 0x00FFFFFF;
-	            }
-	            break;
-	        default:
-	            // 4 bytes o mas: datoRaw ya esta en 32 bits con signo
-	            datoSigned = datoRaw;
-	    }
-
-	    // 2) Mascara unsigned para imprimir bin/hex/oct
-	    int maskUnsigned = (effectiveBytes >= 4)
-	            ? 0xFFFFFFFF
-	            : (1 << (8 * effectiveBytes)) - 1;
-	    int datoUnsigned = datoRaw & maskUnsigned;
-	    */
 	    List<String> salidas = new ArrayList<>();
 
 	    // 3) Formateos segun flags de formato
@@ -597,8 +561,7 @@ public class Operaciones {
 	    return String.join("  ", salidas);
 	}
 	
-	
-    private int obtenerValorOperando(byte tipoOp, int operando) {
+	private int obtenerValorOperando(byte tipoOp, int operando) {
         switch (tipoOp) {
             case 0b01: 
             	return registros.leerSectorRegistro(operando);
@@ -608,16 +571,20 @@ public class Operaciones {
             	int codRegistro = operando >> 4 & 0xF;
             	String nombreReg = registros.getNombreRegistro(codRegistro);
             	int dirLogicaEnRegistro = registros.getRegistro(nombreReg);
-        
+
             	int offsetAdicional = operando >> 8 & 0xFF;
-            	//int dirLogicaMasOffset = (dirLogicaEnRegistro & 0xFFFF0000) | (((dirLogicaEnRegistro & 0xFFFF) + offsetAdicional) & 0xFFFF);
-            	int dirLogicaMasOffset = dirLogicaEnRegistro + offsetAdicional;
+
+				int dirLogicaMasOffset = memoria.agregarOffset(dirLogicaEnRegistro, offsetAdicional);
 	    		int cantBytes = operando & 0x3;
             	cantBytes = 4 - cantBytes;
-                return memoria.leerMemoria(dirLogicaMasOffset, cantBytes); //si es v1 cantBytes se convierte en 4
-            default: return 0;
+				int BytesLeidosDeMemoria = memoria.leerMemoria(dirLogicaMasOffset, cantBytes);
+
+				return BytesLeidosDeMemoria;
+			
         }
+		return 0;
     }
+
     private void guardarValorEnDestino(byte tipoDestino, int operandoDestino, int valor) {
 
     	int cantBytesOperacion = 0;
@@ -626,19 +593,32 @@ public class Operaciones {
                 cantBytesOperacion = registros.escribirSectorRegistro(operandoDestino, valor);
                 break;
             case 0b11:
-                int codRegistro = operandoDestino >> 4 & 0xF; //Registro que tiene el puntero
+                // Extraer tamaño de celda de los 2 bits menos significativos (bits 0-1)
+                int tamanoCelda = operandoDestino & 0b11;
+                int cantBytes;
+                switch (tamanoCelda) {
+                    case 0b00: cantBytes = 4; break; // long
+                    case 0b10: cantBytes = 2; break; // word
+                    case 0b11: cantBytes = 1; break; // byte
+                    default: cantBytes = 4; break;
+                }
+                
+                // El código del registro está en bits 4-7
+                int codRegistro = (operandoDestino >> 4) & 0xF; //Registro que tiene el puntero
                 String nombreReg = registros.getNombreRegistro(codRegistro);
                 int punteroAlmacenado = registros.getRegistro(nombreReg);
-                int offsetExtra = operandoDestino >> 8 & 0xFF;
-		        int cantBytes = operandoDestino & 0x3;
-		        cantBytes = 4 - cantBytes;
-		        
+
+                // El offset está en bits 8-23 (16 bits)
+                short offsetRaw = (short) ((operandoDestino >> 8) & 0xFFFF);
+                int offsetExtra = offsetRaw;
+
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
-                memoria.escribirOperando(dirLogicaFinal, valor,cantBytes); 
-                cantBytesOperacion = 4;
+
+                memoria.escribirOperando(dirLogicaFinal, valor, cantBytes); 
+                cantBytesOperacion = cantBytes;
                 break;
             default:
-                System.out.println("Tipo de destino no soportado.");
+                System.out.println("Tipo de destino no soportado: " + tipoDestino);
                 break;
         }
 
@@ -651,7 +631,29 @@ public class Operaciones {
 	public void setJumpEjecutado(boolean jumpEjecutado) {
 		this.jumpEjecutado = jumpEjecutado;
 	}
-	
+	private int cantBytesLeidos(byte tipoOp, int operando) {
+	    System.out.println("tipo " + Integer.toBinaryString(tipoOp) + " op " + Integer.toBinaryString(operando));
+	    switch (tipoOp) {
+	        case 0b01:  
+	            int sector = (operando >>> 2) & 0x03;
+	            int cant = 0;
+	            switch (sector) {
+	                case 0b00: cant = 4; break;  
+	                case 0b01: cant = 1; break;  
+	                case 0b10: cant = 1; break;  
+	                case 0b11: cant = 2; break;  
+	                default: throw new IllegalArgumentException("Sector inválido: " + sector);
+	            }
+	            return cant;
+	        case 0b10:  
+	            return 2;
+	        case 0b11:  
+	            return 4 - (operando & 0x3);
+	        default:
+	            return 0;
+	    }
+	}
+
     private int cantidadBytesOperando(byte tipoOperando) {
         switch (tipoOperando) {
             case 0b00: return 0;  // Sin operando

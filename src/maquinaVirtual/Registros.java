@@ -126,6 +126,38 @@ public class Registros {
     	return resultado;
     }
 
+//    public int leerSectorRegistro(int operando) {
+//        int codRegistro = (operando >>> 4) & 0x0F;
+//        int sectorRegistro = (operando >>> 2) & 0x03;
+//
+//        String nombreRegistro = getNombreRegistro(codRegistro);
+//        int valorCompleto = getRegistro(nombreRegistro);
+//
+//        switch (sectorRegistro) {
+//            case 0b00:
+//                return valorCompleto; // 32 bits
+//
+//            case 0b01: { // Byte más bajo (bits 0..7)
+//                int b = valorCompleto & 0xFF;
+//                return (byte) b; // extiende signo automáticamente a 32 bits
+//            }
+//
+//            case 0b10: { // Segundo byte más bajo (bits 8..15)
+//                int b = (valorCompleto >>> 8) & 0xFF;
+//                return (byte) b;
+//            }
+//
+//            case 0b11: { // Dos bytes bajos (bits 0..15)
+//                int s = valorCompleto & 0xFFFF;
+//                return (short) s;
+//            }
+//
+//            default:
+//                throw new IllegalArgumentException("Sector inválido: " + sectorRegistro);
+//        }
+//    }
+
+
    public int leerSectorRegistro(int operando) {
 
     	int codRegistro = (operando >>> 4) & 0x0F;
@@ -143,44 +175,36 @@ public class Registros {
                 throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
         }
     }
-//   public int leerSectorRegistro(int operando) {
-//
-//	    int codRegistro = (operando >>> 4) & 0x0F;
-//	    int sectorRegistro = (operando >>> 2) & 0x03;
-//
-//	    String nombreRegistro = getNombreRegistro(codRegistro);
-//	    int valorCompleto = getRegistro(nombreRegistro); 
-//
-//	    switch (sectorRegistro) {
-//	        case 0b00: 
-//	            return valorCompleto; // entero 32 bits
-//	        case 0b01: { // byte bajo con signo
-//	            int val8 = valorCompleto & 0xFF;
-//	            if ((val8 & 0x80) != 0) {
-//	                val8 |= 0xFFFFFF00;
-//	            }
-//	            return val8;
-//	        }
-//	        case 0b10: { // segundo byte bajo con signo
-//	            int val8b = (valorCompleto >>> 8) & 0xFF;
-//	            if ((val8b & 0x80) != 0) {
-//	                val8b |= 0xFFFFFF00;
-//	            }
-//	            return val8b;
-//	        }
-//	        case 0b11: { // 16 bits con signo
-//	            int val16 = valorCompleto & 0xFFFF;
-//	            if ((val16 & 0x8000) != 0) {
-//	                val16 |= 0xFFFF0000;
-//	            }
-//	            return val16;
-//	        }
-//	        default:
-//	            throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
-//	    }
-//	}
+   /*
+   public int leerSectorRegistro(int operando) {
+	    int codRegistro = (operando >>> 4) & 0x0F;
+	    int sectorRegistro = (operando >>> 2) & 0x03;
+	    
+	    String nombreRegistro = getNombreRegistro(codRegistro);
+	    int valorCompleto = getRegistro(nombreRegistro);
 
-    
+	    int valorLeido;
+
+	    switch (sectorRegistro) {
+	        case 0b00: // Entero completo (32 bits)
+	            valorLeido = valorCompleto;
+	            break;
+	        case 0b01: // Byte mas bajo (ej: AL)  bits 0..7
+	            valorLeido = (byte) (valorCompleto & 0xFF); // Castear a byte para extensión de signo automática a 32 bits
+	            break;
+	        case 0b10: // Segundo byte mas bajo (ej: AH)  bits 8..15
+	            valorLeido = (byte) ((valorCompleto >>> 8) & 0xFF); // Castear a byte para extensión de signo automática
+	            break;
+	        case 0b11: // Dos bytes bajos (ej: AX)  bits 0..15
+	            valorLeido = (short) (valorCompleto & 0xFFFF); // Castear a short para extensión de signo automática a 32 bits
+	            break;
+	        default:
+	            throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
+	    }
+	    return valorLeido;
+	}
+
+    */
     public int escribirSectorRegistro(int operando, int nuevoValor) {
     	
         int codRegistro = (operando >>> 4) & 0x0F;
@@ -200,10 +224,10 @@ public class Registros {
         
         // Actualiza el registro con el nuevo valor.
         setRegistro(nombreRegistro, valorCompleto);
+        
         //System.out.println("valor actualizado del registro CX "+ this.getECX());
         //System.out.println("Valor registro CC "+ Integer.toBinaryString(getCC()));
         return cantBytesOp;
-
     }
     
     public void modificarCC(int ultimoResultado, int numBytes) {

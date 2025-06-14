@@ -14,7 +14,13 @@ public class DisassemblerV2 {
         this.registros = registros;
         this.memoria = memoria;
         this.tabla = tabla;
-        this.entryPoint = tabla.getEntryPoint();
+        // Calcular la dirección física absoluta del entry point (base CS + offset entry point)
+        DescriptorSegmento segmentoCS = tabla.getSegmento("CS");
+        if (segmentoCS != null) {
+            this.entryPoint = segmentoCS.getBase() + tabla.getEntryPoint();
+        } else {
+            this.entryPoint = tabla.getEntryPoint();
+        }
     }
 
     public int decodificarInstruccion(byte primerByte) {
@@ -26,9 +32,6 @@ public class DisassemblerV2 {
         int cantBytesOpA = 0, cantBytesOpB = 0;
         String instHexa = ""; 
         String lineaDissasembler = "";
-
-//        // Obtener el segmento actual y su dirección base
-//        String segmentoActual = tabla.getSegmentoDirFisica(registros.getDirFisicaIP());
 
         int ipFisica = registros.getIP();
         String segmentoActual = tabla.getSegmentoDirFisica(ipFisica);
@@ -45,7 +48,7 @@ public class DisassemblerV2 {
             cantBytesOpA = cantidadBytesOperando(tipoOpA);
             bytesYaLeidosInstruccion += cantBytesOpA;
 
-            instHexa = concatenarInstHexa(primerByte, valorOpA, null);
+            instHexa = concatenarInstHexaUnOperando(primerByte, valorOpA, cantBytesOpA);
             lineaDissasembler = String.format("%s %s",
                     codOpAMnemonico(codOperacion),
                     decodificarOp(registros, tipoOpA, valorOpA));
@@ -57,7 +60,7 @@ public class DisassemblerV2 {
             cantBytesOpA = cantidadBytesOperando(tipoOpA);
             bytesYaLeidosInstruccion += cantBytesOpA;
 
-            instHexa = concatenarInstHexa(primerByte, valorOpA, null);
+            instHexa = concatenarInstHexaUnOperando(primerByte, valorOpA, cantBytesOpA);
             lineaDissasembler = String.format("%s %s",
                     codOpAMnemonico(codOperacion),
                     decodificarOp(registros, tipoOpA, valorOpA));
@@ -74,7 +77,7 @@ public class DisassemblerV2 {
             cantBytesOpA = cantidadBytesOperando(tipoOpA);
             bytesYaLeidosInstruccion += cantBytesOpA;
 
-            instHexa = concatenarInstHexa(primerByte, valorOpB, valorOpA);
+            instHexa = concatenarInstHexaDosOperandos(primerByte, valorOpB, cantBytesOpB, valorOpA, cantBytesOpA);
             lineaDissasembler = String.format("%s %s, %s",
                     codOpAMnemonico(codOperacion),
                     decodificarOp(registros, tipoOpA, valorOpA),
@@ -87,7 +90,7 @@ public class DisassemblerV2 {
             System.out.printf("%s[%s:%04X] %-20s | %s\n", 
                     entryPointMark,
                     segmentoActual, 
-                    offset, 
+                    registros.getIP(), 
                     instHexa, 
                     lineaDissasembler);
             return -1; // Termina el disassembler
@@ -104,7 +107,7 @@ public class DisassemblerV2 {
         String entryPointMark = (registros.getIP() == entryPoint) ? "> " : "  ";
         System.out.printf("%s[%04X] %-20s | %s\n", 
                 entryPointMark,
-                offset, 
+                registros.getIP(), 
                 instHexa, 
                 lineaDissasembler);
 
@@ -158,12 +161,14 @@ public class DisassemblerV2 {
                 hexOutput = hexOutput.substring(0, 18) + " ..";
             }
 
-            // Determinar si es el entry point
-            String entryPointMark = (inicioCadena == entryPoint) ? "> " : "  ";
+            // Determinar si es el entry point (comparamos el offset, no la dirección absoluta)
+            int offsetCadena = inicioCadena - base;
+            int entryPointOffset = tabla.getEntryPoint();
+            String entryPointMark = (offsetCadena == entryPointOffset) ? "> " : "  ";
 
             System.out.printf("%s[%04X] %-20s \"%s\"\n", 
                     entryPointMark,
-                    inicioCadena - base,
+                    offsetCadena,
                     hexOutput,
                     asciiString.toString());
         }
@@ -247,28 +252,60 @@ public class DisassemblerV2 {
                 return String.valueOf((int) inmediatoConSigno);
 
             case 0b11: // Memoria
+                // Extraer tamaño de celda de los 2 bits menos significativos (bits 0-1)
+                int tamanoCelda = operando & 0x3;
+                String prefijo;
+                switch (tamanoCelda) {
+                    case 0b00: prefijo = "l"; break; // long
+                    case 0b10: prefijo = "w"; break; // word
+                    case 0b11: prefijo = "b"; break; // byte
+                    default: prefijo = ""; break;
+                }
+                
+                // El código del registro está en bits 4-7
                 int codReg = (operando >> 4) & 0xF;
                 String nombreReg = registros.getNombreRegistro(codReg);
-                byte offsetRaw = (byte) ((operando >> 8) & 0xFF);
+                
+                // El offset está en bits 8-23 (16 bits)
+                short offsetRaw = (short) ((operando >> 8) & 0xFFFF);
                 int offsetConSigno = offsetRaw;
+                
                 if (offsetConSigno == 0) {
-                    return "[" + nombreReg + "]";
+                    return prefijo + "[" + nombreReg + "]";
                 } else {
-                    return "[" + nombreReg + " + " + offsetConSigno + "]";
+                    return prefijo + "[" + nombreReg + " + " + offsetConSigno + "]";
                 }
 
             default: return "";
         }
     }
 
-    private String concatenarInstHexa(byte primerByte, int operandoA, Integer operandoB) {
+    private String concatenarInstHexaUnOperando(byte primerByte, int operando, int cantBytesOpA) {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%02X ", primerByte));
-        sb.append(String.format("%04X", operandoA));
-        if (operandoB != null) {
-            sb.append(" ");
-            sb.append(String.format("%04X", operandoB));
+        sb.append(String.format("%02X", primerByte & 0xFF));
+        
+        // Añadir bytes del operando A
+        for (int i = 0; i < cantBytesOpA; i++) {
+            sb.append(String.format(" %02X", (operando >> (i * 8)) & 0xFF));
         }
+        
+        return sb.toString();
+    }
+
+    private String concatenarInstHexaDosOperandos(byte primerByte, int operandoB, int cantBytesOpB, int operandoA, int cantBytesOpA) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%02X", primerByte & 0xFF));
+        
+        // Añadir bytes del operando B
+        for (int i = 0; i < cantBytesOpB; i++) {
+            sb.append(String.format(" %02X", (operandoB >> (i * 8)) & 0xFF));
+        }
+        
+        // Añadir bytes del operando A
+        for (int i = 0; i < cantBytesOpA; i++) {
+            sb.append(String.format(" %02X", (operandoA >> (i * 8)) & 0xFF));
+        }
+        
         return sb.toString();
     }
 

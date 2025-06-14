@@ -47,7 +47,10 @@ public class UnidadAritmeticoLogica {
             	lineaDissasembler = String.format("%s %s",
             			DissasemblerAux.codOpAMnemonico(codOperacion),
             			DissasemblerAux.decodificarOp(registros, tipoOpA, valorOpA));
-            }        
+            }
+            	
+            
+                    
         } 
 
         else if (codOperacion >= 0x10 && codOperacion <= 0x1E) { //Dos operandos
@@ -84,20 +87,17 @@ public class UnidadAritmeticoLogica {
         } else if(codOperacion == 0x0E){//ret
         	operaciones.RET();
         	this.setJumpEjecutado(true);
-        }
-        else{
+        }else {
+        	
         	bytesYaLeidosInstruccion = -1; // instruccion invalida -> el codigo de operacion no existe
         }
-        
 
-        
-    	if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) {
+        //System.out.println("PILA:"+Integer.toHexString(memoria.leerPila(registros.getSP())));
+    	if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) { 
     		this.registros.modificaIP(bytesYaLeidosInstruccion);                        
-    		//System.out.println(codOperacion +" "+bytesYaLeidosInstruccion +"IP "+ Integer.toHexString(registros.getIP()));
     	} else { //Si hubo salto, el propio salto modifica el valor del IP
     		this.setJumpEjecutado(false);
     	}        	
-    
     	this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
     	if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
     		ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
@@ -105,6 +105,7 @@ public class UnidadAritmeticoLogica {
     	else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
     		ejecutarOperacionDosOperandos(codOperacion, tipoOpA, valorOpA, tipoOpB, valorOpB);
     	}
+    
         
         // Si estamos en modo disassembler, imprimimos la instruccion sin ejecutarla.
         if (testMode) {
@@ -115,7 +116,8 @@ public class UnidadAritmeticoLogica {
         return bytesYaLeidosInstruccion;
 
     }
-	
+    
+    
 	
     public int obtenerOpEnMemoria(byte tipoOperando, int bytesYaLeidosInstruccion) {
         // Se calcula la posicion de inicio para leer el operando. Caso 2 operandos, bytesYaLeidos tendra un valor mayor
@@ -204,15 +206,20 @@ public class UnidadAritmeticoLogica {
 		byte PUSH = 11;
 		byte inmediato = 2;
 		int argc=0,argv=-1;
+		System.out.println("sp antes"+ Integer.toHexString(registros.getSP()));
 		
 		if(!(parametros.isEmpty())) {
-			argc = parametros.size();
 			argv = 0;
+			argc = parametros.size();
+			for(String parametro: parametros) {
+				argv += parametro.length()+1;
+			}
 		}
-		
+		//registros.setSP(registros.getSP());
 		operaciones.PUSH(inmediato, argv);
 		operaciones.PUSH(inmediato, argc);
 		operaciones.PUSH(inmediato, -1);
+		System.out.println("sp desp"+ Integer.toHexString(registros.getSP()));
 	}
 
 }

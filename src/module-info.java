@@ -4,5 +4,5 @@
 /**
  * 
  */
-module maquinaVirtualV2 {
+module mv {
 }

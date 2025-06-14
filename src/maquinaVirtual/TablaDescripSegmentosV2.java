@@ -72,39 +72,13 @@ public class TablaDescripSegmentosV2 {
                 short base = 0;
                 if(!(tabla.isEmpty())) {
                     DescriptorSegmento anterior = tabla.getLast();    				
-                    base = (short)(anterior.getBase() + anterior.getTamanio() +  1);    				
+                    base = (short)(anterior.getBase() + anterior.getTamanio()+1);    				
                 }
 
-                agregarSegmento(segmento.getNombre(), base, segmento.getTamanio());
+                agregarSegmento(segmento.getNombre(), base, (short)(segmento.getTamanio()));
             }
         }
-        mostrarTabla();
-        
-        /*
-        // Primero guardamos todos los segmentos en un mapa
-        for (DescriptorSegmento segmento : segmentos) {
-            if(segmento.getTamanio() > 0) {
-                segmentosMap.put(segmento.getNombre(), segmento);
-            }
-        }
-        
 
-        // Definimos el orden deseado
-        String[] ordenSegmentos = {"PS", "KS", "CS", "DS", "ES", "SS"};
-
-        // Cargamos los segmentos en el orden especificado
-        for (String nombreSegmento : ordenSegmentos) {
-            DescriptorSegmento segmento = segmentosMap.get(nombreSegmento);
-            if (segmento != null) {
-                short base = 0;
-                if(!(tabla.isEmpty())) {
-                    DescriptorSegmento anterior = tabla.getLast();    				
-                    base = (short)(anterior.getBase() + anterior.getTamanio() +  1);    				
-                }
-                short limite = (short)(segmento.getTamanio());
-                agregarSegmento(segmento.getNombre(), base, limite);
-            }
-        }*/
     }
     
     public DescriptorSegmento getSegmento(String segmento) {
@@ -126,12 +100,11 @@ public class TablaDescripSegmentosV2 {
 
     public int inincializarRegistro(String registro) {
 		DescriptorSegmento segmento = getSegmento(registro);
-
-			
+		
 		if(segmento == null) 
 			return -1;
 		else {
-			System.out.println(registro + getIndice(registro));
+			//System.out.println(registro + getIndice(registro));
 			short base = (short) (getIndice(registro));
 			return (int) base << 16;
 		}
@@ -141,7 +114,7 @@ public class TablaDescripSegmentosV2 {
     	int SS = getIndice("SS");
     	if(SS>0) {
     		int offset = getSegmento("SS").getTamanio();
-    		return ((SS << 16) | offset) +1;    		
+    		return ((SS << 16) | offset);    		
     	}
     	else return -1;
     }
