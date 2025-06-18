@@ -131,8 +131,8 @@ public class MemoriaV2 implements MemoriaBase {
     @Override
     public int getDireccionFisica(int direccionLogica) {
         int segmento = (direccionLogica >>> 16) & 0xFFFF; // sin signo
-        int offset   =  direccionLogica        & 0xFFFF;  // sin signo
-
+        short signedOffset = (short) (direccionLogica & 0xFFFF); // Los 16 bits inferiores, ahora interpretados como short (con signo)
+        int offset = signedOffset;
         if (segmento >= tabla.getCantidadSegmentos()) {
             throw new IllegalArgumentException(
                 "Segmento inválido: " + segmento +
@@ -141,7 +141,6 @@ public class MemoriaV2 implements MemoriaBase {
         }
 
         int base = tabla.getBase(segmento);
-
         return base + offset;
     }
 

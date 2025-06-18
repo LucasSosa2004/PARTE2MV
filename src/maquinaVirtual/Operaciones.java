@@ -374,7 +374,6 @@ public class Operaciones {
 		int val = obtenerValorOperando(tipoOpA,opA);
 		int cantBytes = cantBytesLeidos(tipoOpA,opA);
 		//System.out.println("PUSH"+ Integer.toHexString(val));
-		System.out.println(cantBytes);
 		
 		//memoria.imprimirMemoria(tabla.getSegmento("SS").getBase()+tabla.getSegmento("SS").getTamanio()-50,52);
 		memoria.escribirPila(registros.getSP(),val,cantBytes);
@@ -399,7 +398,6 @@ public class Operaciones {
 		//System.out.println("Call"+ Integer.toHexString(registros.getIP()));	
 		int offset = opA & 0x0000FFFF;
 		registros.setIP(CS+offset);
-		System.out.println("IP: "+ Integer.toHexString(registros.getIP()));
 		//this.setJumpEjecutado(true);
 	}
 
@@ -632,7 +630,7 @@ public class Operaciones {
 		this.jumpEjecutado = jumpEjecutado;
 	}
 	private int cantBytesLeidos(byte tipoOp, int operando) {
-	    System.out.println("tipo " + Integer.toBinaryString(tipoOp) + " op " + Integer.toBinaryString(operando));
+	    //System.out.println("tipo " + Integer.toBinaryString(tipoOp) + " op " + Integer.toBinaryString(operando));
 	    switch (tipoOp) {
 	        case 0b01:  
 	            int sector = (operando >>> 2) & 0x03;

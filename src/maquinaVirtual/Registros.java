@@ -35,6 +35,7 @@ public class Registros {
 		this.registros.put("SS", tabla.inincializarRegistro("SS"));
 		this.registros.put("KS", tabla.inincializarRegistro("KS"));
 		this.registros.put("IP", tabla.inincializarRegistro("CS") + tabla.getEntryPoint());
+		System.out.println(Integer.toHexString(getIP()));
 		this.registros.put("SP", tabla.inicializarSP());
 		this.registros.put("BP", 0x0);
 		this.registros.put("CC", 0x0);

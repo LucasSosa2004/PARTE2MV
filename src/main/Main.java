@@ -96,7 +96,7 @@ public class Main {
 	            if (!archivos.tieneVMI()){
 	            	MV.getTabla().mostrarTabla();
 	            	System.out.println(Integer.toHexString(MV.getRegistros().getSP()));
-	            	MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("CS").getBase(),485);
+	            	//MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("CS").getBase(),485);
 	            	ejecutarPrograma(MV);
 	            }
 	            else{
@@ -120,11 +120,10 @@ public class Main {
                 }
 
                 if (disassemblerMode) {
-                	int tamanoCodigo = MV.getTabla().getSegmento("CS").getTamanio();
+                	int tamanoCodigo = MV.getTabla().getSegmento("CS").getBase();
             		ejecutarDisassembler(MV, tamanoCodigo);
                 } else {
-                    ejecutarEnDebug(MV,archivos);
-                    
+                    ejecutarPrograma(MV);
                 }
 
             }
@@ -285,7 +284,6 @@ public class Main {
 
         while (!IPcayoSegm && bytesInstruccion != -1) {
             ejecutar = true;
-            //System.out.println(IP);
 
             if (esperaInput || MV.getUnidadAritmeticoLogica().getBreakPointAnterior()) {
                 System.out.print(">>> ");

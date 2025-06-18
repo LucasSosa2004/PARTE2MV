@@ -54,7 +54,7 @@ public class Archivos {
         if (memLo == -1) 
             throw new IOException("Header VMI incompleto (tamaño)");
         int memoriaKiB = (memHi << 8) | (memLo & 0xFF);
-
+        memoriaKiB *= 1024;
         
         if (!"VMI25".equals(identificador) || version != 1) {
             throw new IOException("VMI inválido: " + identificador + " v" + version);
@@ -96,15 +96,17 @@ public class Archivos {
                 	tabla.agregarSegmento(nombre, base, limite);
                 }
             }
-        }
+        } 
 
         tabla.mostrarTabla();
         registros.mostrarRegistros();
         int CS = tabla.getIndice("CS")<<16;
+        System.out.println("CS: "+ Integer.toHexString(CS));
         MV.setCSOperaciones(CS);
+        
         // memoria
         MemoriaBase memoria = MV.getMemoria();
-        int offset = 0,readByte;;
+        int offset = 0,readByte;
         while (offset < memoriaKiB && (readByte = fis.read()) != -1) {
             memoria.escribirByte(offset, (byte)readByte);
             offset++;
