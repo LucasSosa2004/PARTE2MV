@@ -101,7 +101,6 @@ public class Archivos {
         tabla.mostrarTabla();
         registros.mostrarRegistros();
         int CS = tabla.getIndice("CS")<<16;
-        System.out.println("CS: "+ Integer.toHexString(CS));
         MV.setCSOperaciones(CS);
         
         // memoria
@@ -112,6 +111,7 @@ public class Archivos {
             offset++;
         }
     }
+
 
     public void guardarArchivoVMI(Registros registros, MemoriaBase memoria, TablaDescripSegmentosV2 tabla) throws IOException {
         if (archivoVMI == null) throw new IOException("No hay archivo VMI definido para guardar");

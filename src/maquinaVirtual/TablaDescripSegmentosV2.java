@@ -58,8 +58,8 @@ public class TablaDescripSegmentosV2 {
     }
     }
     
-    public void agregarSegmento(String segmento, short base, short limite) {
-        tabla.add(new DescriptorSegmento(segmento,base,limite));
+    public void agregarSegmento(String segmento, short base, short tamanio) {
+        tabla.add(new DescriptorSegmento(segmento,base,tamanio));
     }
 
     public void setTabla(HeaderMV header) {
@@ -113,7 +113,7 @@ public class TablaDescripSegmentosV2 {
     public int inicializarSP() {	
     	int SS = getIndice("SS");
     	if(SS>0) {
-    		int offset = getSegmento("SS").getTamanio();
+    		int offset = getSegmento("SS").getTamanio()+1;
     		return ((SS << 16) | offset);    		
     	}
     	else return -1;

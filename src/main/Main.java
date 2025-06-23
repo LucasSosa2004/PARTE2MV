@@ -116,7 +116,7 @@ public class Main {
 
                     MV.getTabla().mostrarTabla(); 
                     MV.getRegistros().mostrarRegistros();
-                    MV.getMemoria().imprimirMemoria(0,30);
+                    MV.getMemoria().imprimirMemoria(0,33);
                 }
 
                 if (disassemblerMode) {

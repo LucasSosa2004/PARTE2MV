@@ -433,6 +433,9 @@ public class Operaciones {
 
 
 	    int cantBytesOperacion = celdas * tamanio;
+	    
+
+
 	    if (modo == 1) { //Read
 
             Scanner scanner = new Scanner(System.in);
@@ -456,7 +459,7 @@ public class Operaciones {
                     System.err.println("Entrada invalida. Se usara 0.");
                     valorInput = 0;
                 }
-                memoria.escribirOperando(dirLogica, valorInput);
+                memoria.escribirOperando(dirLogica, valorInput,tamanio);
             }
 	    } else if (modo == 2) { //WRITE
 	        
@@ -487,6 +490,7 @@ public class Operaciones {
 	    	
 	    	for(int i=0; i<maxChars;i++) {
 	    		memoria.escribirByteLogica(EDX + i, (byte)input.charAt(i));
+	    		System.out.println((EDX+i) + " "+ (byte)input.charAt(i));
 	    	}
 	    		
 	    }
@@ -611,7 +615,11 @@ public class Operaciones {
                 int offsetExtra = offsetRaw;
 
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
-
+/*
+                System.out.println("DEBUG: tipoDestino=" + Integer.toBinaryString(tipoDestino)
+                + ", operandoDestino=0x" + Integer.toHexString(operandoDestino)
+                + ", bytes a escribir: " + cantBytes);
+*/
                 memoria.escribirOperando(dirLogicaFinal, valor, cantBytes); 
                 cantBytesOperacion = cantBytes;
                 break;

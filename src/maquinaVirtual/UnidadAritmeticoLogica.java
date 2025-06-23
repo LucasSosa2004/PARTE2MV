@@ -30,10 +30,11 @@ public class UnidadAritmeticoLogica {
 
     public int ejecutarInstruccion(byte primerByte) {
     	
+    	
         byte codOperacion = (byte) (primerByte & 0x1F);
         int bytesYaLeidosInstruccion = 1;  
         byte tipoOpA = 0, tipoOpB = 0;int valorOpA = 0, valorOpB = 0;int cantBytesOpA = 0, cantBytesOpB = 0;
-        String instHexa = ""; String lineaDissasembler = "";
+        String instHexa = ""; String lineaDissasembler = "";	
         if (codOperacion >= 0 && codOperacion <= 0x0D) {  // Instrucciones de un operando 
             tipoOpA = (byte) ((primerByte >> 6) & 0x03); //aplico mascara para quedarme con los primeros dos bits
 
@@ -49,8 +50,6 @@ public class UnidadAritmeticoLogica {
             			DissasemblerAux.decodificarOp(registros, tipoOpA, valorOpA));
             }
             	
-            
-                    
         } 
 
         else if (codOperacion >= 0x10 && codOperacion <= 0x1E) { //Dos operandos
@@ -94,17 +93,17 @@ public class UnidadAritmeticoLogica {
 
         //System.out.println("PILA:"+Integer.toHexString(memoria.leerPila(registros.getSP())));
     	if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) { 
-    		this.registros.modificaIP(bytesYaLeidosInstruccion);                        
+    		this.registros.modificaIP(bytesYaLeidosInstruccion);      
+    		this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
+        	if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
+        		ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
+        	}
+        	else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
+        		ejecutarOperacionDosOperandos(codOperacion, tipoOpA, valorOpA, tipoOpB, valorOpB);
+        	}
     	} else { //Si hubo salto, el propio salto modifica el valor del IP
     		this.setJumpEjecutado(false);
     	}        	
-    	this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
-    	if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
-    		ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
-    	}
-    	else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
-    		ejecutarOperacionDosOperandos(codOperacion, tipoOpA, valorOpA, tipoOpB, valorOpB);
-    	}
     
         
         // Si estamos en modo disassembler, imprimimos la instruccion sin ejecutarla.

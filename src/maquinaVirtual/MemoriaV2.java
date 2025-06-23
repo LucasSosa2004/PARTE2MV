@@ -278,10 +278,9 @@ public int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadByte
     
     @Override
     public void escribirOperando(int direccionLogica, int valor, int cantBytes) {
-        /*System.out.println("ENTROOO A ESCRIBIR OPERANDO");*/
+
         int direccionFisica = getDireccionFisica(direccionLogica);
-        /*System.out.println("direccionFisica: "+direccionFisica);
-        System.out.println("valor a guardar "+valor);*/
+
         if (direccionFisica < 0 || direccionFisica + 4 > tamanoMemoria) {
             throw new IllegalArgumentException("Direccion fuera de los limites de la memoria: " + direccionFisica);
         }
