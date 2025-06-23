@@ -39,7 +39,7 @@ public class MemoriaV2 implements MemoriaBase {
         int inicioStrings = 0;
         List<Integer> offsets = new ArrayList<>();
         System.out.println("parametro a cargar: "+parametros.get(0));
-        System.out.println("se carga su valor ASCII vinculado. Ej, si es un 8 se carga el 56 ASCII");
+        
         // 1. Escribir strings con terminador '\0'
         int posicionActual = inicioStrings;
         for (String p : parametros) {
@@ -110,6 +110,7 @@ public class MemoriaV2 implements MemoriaBase {
         valor |= (memoria[direccionFisica + 1] & 0xFF) << 16;
         valor |= (memoria[direccionFisica + 2] & 0xFF) << 8;
         valor |= (memoria[direccionFisica + 3] & 0xFF);
+        
         
         return valor;
     }
@@ -267,7 +268,6 @@ public int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadByte
         if(direccionFisica < tabla.getSegmento("SS").getBase()) {
     		throw new IndexOutOfBoundsException("Stack Overflow");
     	}
-        
         memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
         memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
         memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);

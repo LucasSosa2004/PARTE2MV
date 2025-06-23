@@ -592,6 +592,10 @@ public class Operaciones {
     	int cantBytesOperacion = 0;
         switch (tipoDestino) {
             case 0b01:
+            	if(registros.getBP()!=-1) {
+            		System.out.println("BP"+Integer.toHexString(memoria.getDireccionFisica(registros.getBP())));
+            	}
+            	memoria.imprimirMemoria(memoria.getDireccionFisica(registros.getSP())-10, 30);
                 cantBytesOperacion = registros.escribirSectorRegistro(operandoDestino, valor);
                 break;
             case 0b11:
@@ -610,12 +614,11 @@ public class Operaciones {
                 String nombreReg = registros.getNombreRegistro(codRegistro);
                 int punteroAlmacenado = registros.getRegistro(nombreReg);
 
-                // El offset está en bits 8-23 (16 bits)
-                short offsetRaw = (short) ((operandoDestino >> 8) & 0xFFFF);
-                int offsetExtra = offsetRaw;
+                short offset = (short) ((operandoDestino >> 8) & 0xFFFF);
+                int dirLogicaFinal = punteroAlmacenado + offset; 
 
-                int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
-/*
+                //int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
+                /*
                 System.out.println("DEBUG: tipoDestino=" + Integer.toBinaryString(tipoDestino)
                 + ", operandoDestino=0x" + Integer.toHexString(operandoDestino)
                 + ", bytes a escribir: " + cantBytes);

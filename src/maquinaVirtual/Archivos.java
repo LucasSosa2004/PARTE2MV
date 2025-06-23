@@ -61,6 +61,7 @@ public class Archivos {
         }
         Registros registros = MV.getRegistros();
         TablaDescripSegmentosV2 tabla = MV.getTabla();
+        HeaderMV header = new HeaderMV(identificador, version); // 
         
         // registros
         for (int reg = 0; reg < 16; reg++) {
@@ -86,17 +87,14 @@ public class Archivos {
             int loLim = fis.read();
             if (loLim == -1) throw new IOException("Descriptor límite incompleto");
             short limite = (short)((hiLim << 8) | (loLim & 0xFF));
-
+            
+            
             if (limite > 0) {
                 String nombre = registros.buscarBaseEnRegistros(i);
-                if(i == 0 && !(nombre.equals("CS") || nombre.equals("KS"))) {
-                	tabla.agregarSegmento("PS", base, limite);
-                }
-                else {
-                	tabla.agregarSegmento(nombre, base, limite);
-                }
+                header.agregarSegmento(nombre, limite);
             }
         } 
+        tabla.setTabla(header);
 
         tabla.mostrarTabla();
         registros.mostrarRegistros();

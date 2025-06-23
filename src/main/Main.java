@@ -112,11 +112,8 @@ public class Main {
             	MV = new MaquinaVirtual(parametrosPrograma,tamMemoria,archivos,false);
             	if (archivos.tieneVMI()) {
                     archivos.cargarEnMV(MV); 
-                    MV.getUnidadAritmeticoLogica().cargarMain(parametrosPrograma);
-
                     MV.getTabla().mostrarTabla(); 
                     MV.getRegistros().mostrarRegistros();
-                    MV.getMemoria().imprimirMemoria(0,33);
                 }
 
                 if (disassemblerMode) {
@@ -166,13 +163,6 @@ public class Main {
                     header.agregarSegmento("DS", mascara2bytes(v2Extra[2], v2Extra[3]));
                     header.agregarSegmento("ES", mascara2bytes(v2Extra[4], v2Extra[5]));
                     header.agregarSegmento("SS", mascara2bytes(v2Extra[6], v2Extra[7]));
-                    /*
-                    header.setTamanoCS(((v2Extra[0] & 0xFF) << 8) | (v2Extra[1] & 0xFF));
-                    header.setTamanoDS(((v2Extra[2] & 0xFF) << 8) | (v2Extra[3] & 0xFF));
-                    header.setTamanoES(((v2Extra[4] & 0xFF) << 8) | (v2Extra[5] & 0xFF));
-                    header.setTamanoSS(((v2Extra[6] & 0xFF) << 8) | (v2Extra[7] & 0xFF));
-                    header.setTamanoKS(((v2Extra[8] & 0xFF) << 8) | (v2Extra[9] & 0xFF));
-                    */
                     header.setEntryPoint(mascara2bytes(v2Extra[10], v2Extra[11]));
                 } else {
                     throw new IOException("Version de .vmx no soportada: " + version);
@@ -261,6 +251,7 @@ public class Main {
         boolean IPcayoSegm = false;
         while (!IPcayoSegm && bytesInstruccion != -1) {
         	int IP = MV.getRegistros().getIP();
+        	System.out.println(Integer.toHexString(IP+0x1d));
             byte primerByte = MV.getMemoria().leerPrimerByte(IP);
             bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
             IPcayoSegm = MV.caidaSegmentoIP();

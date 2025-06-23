@@ -222,12 +222,10 @@ public class Registros {
             default:
                 throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
         }
-        
+        System.out.println("escribir en "+ nombreRegistro+": "+ Integer.toHexString(valorCompleto));
         // Actualiza el registro con el nuevo valor.
         setRegistro(nombreRegistro, valorCompleto);
         
-        //System.out.println("valor actualizado del registro CX "+ this.getECX());
-        //System.out.println("Valor registro CC "+ Integer.toBinaryString(getCC()));
         return cantBytesOp;
     }
     
