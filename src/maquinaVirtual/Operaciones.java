@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Operaciones {
 	
-	private static final int NEGATIVO = 0x80000000;  // bit 32 = Negativo
-	private static final int CERO = 0x40000000;  // bit 31 = Cero
+	private static final int NEGATIVO = 0x80000000;  
+	private static final int CERO = 0x40000000;  
 
     private final MemoriaBase memoria;
     private final Registros registros;
@@ -53,10 +53,10 @@ public class Operaciones {
     	int sectorRegistro = (operando >>> 2) & 0x03;
     	
     	switch (sectorRegistro) {
-        case 0b00:return 4; // Entero completo (32 bits)
-        case 0b01:return 1; // Byte mas bajo (ej: AL)  bits 0..7
-        case 0b10:return 1; // Segundo byte mas bajo (ej: AH)  bits 8..15            
-        case 0b11:return 2; // Dos bytes bajos (ej: AX)  bits 0..15
+        case 0b00:return 4; 
+        case 0b01:return 1; 
+        case 0b10:return 1;         
+        case 0b11:return 2; 
         default:
             throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
     	}
@@ -81,27 +81,21 @@ public class Operaciones {
         int srcBytes  = tamanioOperando(tipoOpB, opB);
         int destBytes = tamanioOperando(tipoOpA, opA);
         
-        // Si la fuente es mas pequena que el destino, hacemos sign-extension
+        
         if (srcBytes < destBytes) {
-            int maskSrc = (1 << (8 * srcBytes)) - 1;        // bits bajos de la fuente
+            int maskSrc = (1 << (8 * srcBytes)) - 1;        
             int v       = valorB & maskSrc;
-            int signBit = 1 << (8 * srcBytes - 1);         // bit de signo en la fuente
+            int signBit = 1 << (8 * srcBytes - 1);        
 
             if ((v & signBit) != 0) {
-                // valor negativo en N bytes: rellenar bits altos a 1
+                
                 valorB = v | ~maskSrc;
             } else {
-                // positivo: alto queda en 0
+                
                 valorB = v;
             }
         }
-        /*
-        if(srcBytes<destBytes) {
-        	signExtend(valorB,srcBytes);
-        }
-        }*/
-
-        // propagamos el tamano del operando fuente
+        
         guardarValorEnDestino(tipoOpA, opA, valorB);
     }
 
@@ -110,14 +104,14 @@ public class Operaciones {
         int valorB    = obtenerValorOperando(tipoOpB, opB);
         int resultado = valorA - valorB;
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
+        
     }
 
     public void MUL(byte tipoOpA, int opA, byte tipoOpB, int opB) {
         int resultado = obtenerValorOperando(tipoOpA, opA)
                       * obtenerValorOperando(tipoOpB, opB);
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
+        
     }
 
     public void DIV(byte tipoOpA, int opA, byte tipoOpB, int opB) {
@@ -129,7 +123,7 @@ public class Operaciones {
         registros.setAC(a % b);
         int cociente = a / b;
         guardarValorEnDestino(tipoOpA, opA, cociente);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, cociente);
+        
     }
 
 
@@ -159,10 +153,10 @@ public class Operaciones {
         int signBit = 1 << (8 * tamanioBytes - 1);
 
         if ((v & signBit) != 0) {
-            // Negativo: rellenamos con 1s
+           
             return v | ~mask;
         } else {
-            // Positivo: queda igual
+        
             return v;
         }
     }
@@ -182,14 +176,7 @@ public class Operaciones {
     
     
     
-    /*public void AND(byte tipoOpA, int opA, byte tipoOpB, int opB) {
-        int resultado = obtenerValorOperando(tipoOpA, opA)
-                      & obtenerValorOperando(tipoOpB, opB);
-        
-        guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
-    }*/
-
+    
     public void OR(byte tipoOpA, int opA, byte tipoOpB, int opB) {
 
 		int valorA = obtenerValorOperando(tipoOpA, opA);
@@ -219,7 +206,7 @@ public class Operaciones {
             throw new IllegalArgumentException("SWAP no admite inmediatos");
         int valorA = obtenerValorOperando(tipoOpA, opA);
         int valorB = obtenerValorOperando(tipoOpB, opB);
-        // ojo al orden: el tipoFuente de cada write es el tipo del valor que escribes
+        
         guardarValorEnDestino(tipoOpA, opA, valorB);
         guardarValorEnDestino(tipoOpB, opB, valorA);
 
@@ -232,8 +219,7 @@ public class Operaciones {
         int resultado = valor << desplaz;
         
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
-        // actualizar CC segun resultado
+        
     }
 
     public void SHR(byte tipoOpA, int opA, byte tipoOpB, int opB) {
@@ -242,8 +228,7 @@ public class Operaciones {
         int resultado = valor >> desplaz;
         
         guardarValorEnDestino(tipoOpA, opA, resultado);
-        //guardarValorEnDestino(tipoOpA, opA, tipoOpB, opB, resultado);
-        // actualizar CC
+       
     }
 
     public void LDH(byte tipoOpA, int opA, byte tipoOpB, int opB) {
@@ -260,13 +245,13 @@ public class Operaciones {
         guardarValorEnDestino(tipoOpA, opA, resultado);
     }
     
-    // Operaciones un operando
+   
     
     public void JMP(byte tipoOpA, int opA) {
-        // Obtiene la direccion objetivo (ya sea literal, desde un registro o desde memoria)
+        
         int nuevoIP = obtenerValorOperando(tipoOpA, opA);
 
-        //System.out.println(CS);
+        
         registros.setRegistro("IP", CS +nuevoIP);
     }
     
@@ -346,14 +331,14 @@ public class Operaciones {
 	
     
 	public void NOT(byte tipoOpA, int opA) {
-	    // 1) Lees el operando
+	   
 	    int valorOpA = obtenerValorOperando(tipoOpA, opA);
-	    // 2) Calculas la negacion bit a bit
+	    
 	    int resultado = ~valorOpA;
-	    // 3) Guardas usando tipoFuente = tipoOpA
+	    
 	    guardarValorEnDestino(tipoOpA, opA, resultado);
 
-	    // 4) Actualizas flags CC
+	    
 	    int cc = 0;
 	    if (resultado == 0) {
 	        cc |= CERO;
@@ -373,9 +358,9 @@ public class Operaciones {
 		}
 		int val = obtenerValorOperando(tipoOpA,opA);
 		int cantBytes = cantBytesLeidos(tipoOpA,opA);
-		//System.out.println("PUSH"+ Integer.toHexString(val));
 		
-		//memoria.imprimirMemoria(tabla.getSegmento("SS").getBase()+tabla.getSegmento("SS").getTamanio()-50,52);
+		
+		
 		memoria.escribirPila(registros.getSP(),val,cantBytes);
 	}
 
@@ -393,12 +378,12 @@ public class Operaciones {
 	}
 	
 	public void CALL(byte tipoOpA, int opA) {
-		byte i=1;//no deja poner cte abajo
+		byte i=1;
 		PUSH(i,0x50); 
-		//System.out.println("Call"+ Integer.toHexString(registros.getIP()));	
+		
 		int offset = opA & 0x0000FFFF;
 		registros.setIP(CS+offset);
-		//this.setJumpEjecutado(true);
+		
 	}
 
 	
@@ -416,27 +401,27 @@ public class Operaciones {
 
 	
 	public void SYS(byte tipoOpA, int opA) {
-		//System.out.println("entro al sys");
+		
 		
 	    if (tipoOpA == 0b00) {
 	        throw new IllegalArgumentException("SYS: falta el operando de modo");
 	    }
 	    int modo = obtenerValorOperando(tipoOpA, opA);
 
-	    int dirLogicaBase = registros.getRegistro("EDX"); // (ya apunta al DS + offset)
+	    int dirLogicaBase = registros.getRegistro("EDX"); 
 	    int ECX        = registros.getRegistro("ECX");
 	    int EDX 	   = registros.getRegistro("EDX"); 
-	    int CX	       = ECX & 0xFFFF;		  // CX
-	    int celdas     = ECX & 0xFF;          // CL 
-	    int tamanio    = (ECX >> 8) & 0xFF;   // CH 
-	    int formatoOperacion  = registros.getRegistro("EAX") & 0xFF; //AL (1=hex, 2=bin, 4=oct, resto=dec)
+	    int CX	       = ECX & 0xFFFF;		 
+	    int celdas     = ECX & 0xFF;          
+	    int tamanio    = (ECX >> 8) & 0xFF;   
+	    int formatoOperacion  = registros.getRegistro("EAX") & 0xFF; 
 
 
 	    int cantBytesOperacion = celdas * tamanio;
 	    
 
 
-	    if (modo == 1) { //Read
+	    if (modo == 1) { 
 
             Scanner scanner = new Scanner(System.in);
             for (int i = 0; i < celdas; i++) {
@@ -461,15 +446,15 @@ public class Operaciones {
                 }
                 memoria.escribirOperando(dirLogica, valorInput,tamanio);
             }
-	    } else if (modo == 2) { //WRITE
+	    } else if (modo == 2) { 
 	        
 	    	for (int i = 0; i < celdas; i++) {
-	        	int dato = memoria.leerOperando(dirLogicaBase, i*tamanio, tamanio); //i*tamanio = cant bytes que ya lei
-	            //OBTENER LA DIR FISICA DE LA CELDA QUE SE LEE
+	        	int dato = memoria.leerOperando(dirLogicaBase, i*tamanio, tamanio); 
+	            
 	        	int dirLogicaCelda = memoria.agregarOffset(dirLogicaBase, i*tamanio);
 	        	int dirFisica = memoria.getDireccionFisica(dirLogicaCelda);
 	            
-	        	//hay q indicar el tamanio del dato que se leyo (asi se muestra con el signo que corresponde y formato apropiado)
+	        	
 	        	String salidaFormateada = formarStringSalida(formatoOperacion, dato, tamanio); 	            
 	        	
 	        	System.out.println("[" + String.format("%04X", dirFisica) + "]: " +salidaFormateada);
@@ -507,7 +492,7 @@ public class Operaciones {
 	    else if(modo == 7) {
 	    	clearScreen();
 	    }
-	    else if (modo == 0xF) { //breakpoint
+	    else if (modo == 0xF) { 
 	    	try {	    		
 	    		if(archivos.tieneVMI()) {
 	    			archivos.guardarArchivoVMI(this.registros, this.memoria, this.tabla);	    			
@@ -532,26 +517,26 @@ public class Operaciones {
 
 	    List<String> salidas = new ArrayList<>();
 
-	    // 3) Formateos segun flags de formato
-	    // Binario (bit 4 = 16)
+	    
+	    
 	    if ((formatoOperacion & 16) != 0) {
 	        salidas.add("0b" + Integer.toBinaryString(dato));
 	    }
-	    // Hexadecimal (bit 3 = 8)
+	    
 	    if ((formatoOperacion & 8) != 0) {
 	        salidas.add("0x" + Integer.toHexString(dato).toUpperCase());
 	    }
-	    // Octal (bit 2 = 4)
+	   
 	    if ((formatoOperacion & 4) != 0) {
 	        salidas.add("0o" + Integer.toOctalString(dato));
 	    }
-	    // ASCII (bit 1 = 2)
+	    
 	    if ((formatoOperacion & 2) != 0) {
 	        char c = (char) dato;
 	        String ch = (c >= 32 && c <= 126) ? String.valueOf(c) : ".";
 	        salidas.add(ch);
 	    }
-	    // Decimal con signo (bit 0 = 1)
+	    
 	    if ((formatoOperacion & 1) != 0) {
 	        salidas.add(String.valueOf(dato));
 	    }
@@ -559,7 +544,7 @@ public class Operaciones {
 	    if (salidas.isEmpty()) {
 	        return "formato no soportado";
 	    }
-	    // Doble espacio como separador
+	    
 	    return String.join("  ", salidas);
 	}
 	
@@ -574,11 +559,22 @@ public class Operaciones {
             	String nombreReg = registros.getNombreRegistro(codRegistro);
             	int dirLogicaEnRegistro = registros.getRegistro(nombreReg);
 
-            	int offsetAdicional = operando >> 8 & 0xFF;
+            	
+            	short offsetRaw = (short) ((operando >> 8) & 0xFFFF);
+            	int offsetAdicional = offsetRaw;
 
 				int dirLogicaMasOffset = memoria.agregarOffset(dirLogicaEnRegistro, offsetAdicional);
-	    		int cantBytes = operando & 0x3;
-            	cantBytes = 4 - cantBytes;
+				
+				
+                int tamanoCelda = operando & 0x3;
+                int cantBytes;
+                switch (tamanoCelda) {
+                    case 0b00: cantBytes = 4; break; 
+                    case 0b10: cantBytes = 2; break; 
+                    case 0b11: cantBytes = 1; break; 
+                    default: cantBytes = 4; break;
+                }
+                
 				int BytesLeidosDeMemoria = memoria.leerMemoria(dirLogicaMasOffset, cantBytes);
 
 				return BytesLeidosDeMemoria;
@@ -595,31 +591,27 @@ public class Operaciones {
                 cantBytesOperacion = registros.escribirSectorRegistro(operandoDestino, valor);
                 break;
             case 0b11:
-                // Extraer tamaño de celda de los 2 bits menos significativos (bits 0-1)
+                
                 int tamanoCelda = operandoDestino & 0b11;
                 int cantBytes;
                 switch (tamanoCelda) {
-                    case 0b00: cantBytes = 4; break; // long
-                    case 0b10: cantBytes = 2; break; // word
-                    case 0b11: cantBytes = 1; break; // byte
+                    case 0b00: cantBytes = 4; break; 
+                    case 0b10: cantBytes = 2; break; 
+                    case 0b11: cantBytes = 1; break; 
                     default: cantBytes = 4; break;
                 }
                 
-                // El código del registro está en bits 4-7
-                int codRegistro = (operandoDestino >> 4) & 0xF; //Registro que tiene el puntero
+                
+                int codRegistro = (operandoDestino >> 4) & 0xF; 
                 String nombreReg = registros.getNombreRegistro(codRegistro);
                 int punteroAlmacenado = registros.getRegistro(nombreReg);
 
-                // El offset está en bits 8-23 (16 bits)
+                
                 short offsetRaw = (short) ((operandoDestino >> 8) & 0xFFFF);
                 int offsetExtra = offsetRaw;
 
                 int dirLogicaFinal = (punteroAlmacenado & 0xFFFF0000) | (((punteroAlmacenado & 0xFFFF) + offsetExtra) & 0xFFFF);
-/*
-                System.out.println("DEBUG: tipoDestino=" + Integer.toBinaryString(tipoDestino)
-                + ", operandoDestino=0x" + Integer.toHexString(operandoDestino)
-                + ", bytes a escribir: " + cantBytes);
-*/
+
                 memoria.escribirOperando(dirLogicaFinal, valor, cantBytes); 
                 cantBytesOperacion = cantBytes;
                 break;
@@ -638,7 +630,7 @@ public class Operaciones {
 		this.jumpEjecutado = jumpEjecutado;
 	}
 	private int cantBytesLeidos(byte tipoOp, int operando) {
-	    //System.out.println("tipo " + Integer.toBinaryString(tipoOp) + " op " + Integer.toBinaryString(operando));
+	   
 	    switch (tipoOp) {
 	        case 0b01:  
 	            int sector = (operando >>> 2) & 0x03;
@@ -662,11 +654,11 @@ public class Operaciones {
 
     private int cantidadBytesOperando(byte tipoOperando) {
         switch (tipoOperando) {
-            case 0b00: return 0;  // Sin operando
-            case 0b01: return 1;  // Registro (1 byte)
-            case 0b10: return 2;  // Inmediato (2 bytes)
-            case 0b11: return 3;  // Memoria (3 bytes)
-            default: return 0;    // Por defecto
+            case 0b00: return 0;  
+            case 0b01: return 1;  
+            case 0b10: return 2;  
+            case 0b11: return 3;  
+            default: return 0;    
         }
     }
     

@@ -14,7 +14,7 @@ public class Registros {
 	
 	public Registros(MemoriaBase memoria) {
 		this.registros.put("CS",0x0);
-		this.registros.put("DS",0x00010000); //pos de DS en TablaDS
+		this.registros.put("DS",0x00010000); 
 		this.registros.put("IP", 0x0);
 		this.registros.put("CC", 0x0);
 		this.registros.put("AC", 0x0);
@@ -35,7 +35,7 @@ public class Registros {
 		this.registros.put("SS", tabla.inincializarRegistro("SS"));
 		this.registros.put("KS", tabla.inincializarRegistro("KS"));
 		this.registros.put("IP", tabla.inincializarRegistro("CS") + tabla.getEntryPoint());
-		System.out.println(Integer.toHexString(getIP()));
+		
 		this.registros.put("SP", tabla.inicializarSP());
 		this.registros.put("BP", 0x0);
 		this.registros.put("CC", 0x0);
@@ -94,14 +94,7 @@ public class Registros {
     	registros.replace(reg, val);
     }
     
-    /*public void modificaIP(int cantBytes) { //Se recibe la cant bytes que se debe avanzar (Se actualiza solo el offset)
-        int ip = getIP();
-        int segmento = ip & 0xFFFF0000;  
-        int offset   = ip & 0x0000FFFF;    
-        offset = (offset + cantBytes) & 0xFFFF; 
-        int nuevoIP = segmento | offset;
-        setIP(nuevoIP);
-    }*/
+   
     public void modificaIP(int cantBytes) {
     	int ip = getIP();
     	ip += cantBytes;
@@ -110,11 +103,11 @@ public class Registros {
     }
     
     public int getDirFisicaIP() {
-        int ipLogico = getIP(); // Obtenemos el puntero logico almacenado en IP
+        int ipLogico = getIP(); 
         return memoria.getDireccionFisica(ipLogico);
     }
     
-    //busca el registro con base logica base
+    
     public String buscarBaseEnRegistros(int base){
     	String[] registrosConSegmento = {"CS","DS","ES","SS","KS"};
     	String resultado="";
@@ -127,36 +120,6 @@ public class Registros {
     	return resultado;
     }
 
-//    public int leerSectorRegistro(int operando) {
-//        int codRegistro = (operando >>> 4) & 0x0F;
-//        int sectorRegistro = (operando >>> 2) & 0x03;
-//
-//        String nombreRegistro = getNombreRegistro(codRegistro);
-//        int valorCompleto = getRegistro(nombreRegistro);
-//
-//        switch (sectorRegistro) {
-//            case 0b00:
-//                return valorCompleto; // 32 bits
-//
-//            case 0b01: { // Byte más bajo (bits 0..7)
-//                int b = valorCompleto & 0xFF;
-//                return (byte) b; // extiende signo automáticamente a 32 bits
-//            }
-//
-//            case 0b10: { // Segundo byte más bajo (bits 8..15)
-//                int b = (valorCompleto >>> 8) & 0xFF;
-//                return (byte) b;
-//            }
-//
-//            case 0b11: { // Dos bytes bajos (bits 0..15)
-//                int s = valorCompleto & 0xFFFF;
-//                return (short) s;
-//            }
-//
-//            default:
-//                throw new IllegalArgumentException("Sector inválido: " + sectorRegistro);
-//        }
-//    }
 
 
    public int leerSectorRegistro(int operando) {
@@ -165,100 +128,69 @@ public class Registros {
     	int sectorRegistro = (operando >>> 2) & 0x03;
     	
     	String nombreRegistro = getNombreRegistro(codRegistro);
-        int valorCompleto = getRegistro(nombreRegistro); //getRegistro(nombre) devuelve un int (32 bits) con el contenido completo del registro
+        int valorCompleto = getRegistro(nombreRegistro); 
 
         switch (sectorRegistro) {
-            case 0b00:return valorCompleto; // Entero completo (32 bits)
-            case 0b01:return valorCompleto & 0xFF; // Byte mas bajo (ej: AL)  bits 0..7
-            case 0b10:return (valorCompleto >>> 8) & 0xFF; // Segundo byte mas bajo (ej: AH)  bits 8..15            
-            case 0b11:return valorCompleto & 0xFFFF; // Dos bytes bajos (ej: AX)  bits 0..15
+            case 0b00:return valorCompleto; 
+            case 0b01:return valorCompleto & 0xFF; 
+            case 0b10:return (valorCompleto >>> 8) & 0xFF;           
+            case 0b11:return valorCompleto & 0xFFFF; 
             default:
                 throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
         }
     }
-   /*
-   public int leerSectorRegistro(int operando) {
-	    int codRegistro = (operando >>> 4) & 0x0F;
-	    int sectorRegistro = (operando >>> 2) & 0x03;
-	    
-	    String nombreRegistro = getNombreRegistro(codRegistro);
-	    int valorCompleto = getRegistro(nombreRegistro);
-
-	    int valorLeido;
-
-	    switch (sectorRegistro) {
-	        case 0b00: // Entero completo (32 bits)
-	            valorLeido = valorCompleto;
-	            break;
-	        case 0b01: // Byte mas bajo (ej: AL)  bits 0..7
-	            valorLeido = (byte) (valorCompleto & 0xFF); // Castear a byte para extensión de signo automática a 32 bits
-	            break;
-	        case 0b10: // Segundo byte mas bajo (ej: AH)  bits 8..15
-	            valorLeido = (byte) ((valorCompleto >>> 8) & 0xFF); // Castear a byte para extensión de signo automática
-	            break;
-	        case 0b11: // Dos bytes bajos (ej: AX)  bits 0..15
-	            valorLeido = (short) (valorCompleto & 0xFFFF); // Castear a short para extensión de signo automática a 32 bits
-	            break;
-	        default:
-	            throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
-	    }
-	    return valorLeido;
-	}
-
-    */
+   
     public int escribirSectorRegistro(int operando, int nuevoValor) {
     	
         int codRegistro = (operando >>> 4) & 0x0F;
         int sectorRegistro = (operando >>> 2) & 0x03;
         String nombreRegistro = getNombreRegistro(codRegistro);
-        int valorCompleto = getRegistro(nombreRegistro); // Obtener el valor completo (32 bits) del registro.
+        int valorCompleto = getRegistro(nombreRegistro); 
         int cantBytesOp;
-        // Modificar la parte del registro especificada por el sector
+        
         switch (sectorRegistro) {
-            case 0b00:valorCompleto = nuevoValor;cantBytesOp=4;break; // Reemplaza todos los 32 bits del registro.
-            case 0b01:valorCompleto = (valorCompleto & 0xFFFFFF00) | (nuevoValor & 0xFF);cantBytesOp=1;break; // Reemplaza solo el byte mas bajo (bits 0..7)
-            case 0b10:valorCompleto = (valorCompleto & 0xFFFF00FF) | ((nuevoValor & 0xFF) << 8);cantBytesOp=1;break; // Reemplaza el segundo byte mas bajo (bits 8..15)
-            case 0b11:valorCompleto = (valorCompleto & 0xFFFF0000) | (nuevoValor & 0xFFFF);cantBytesOp=2;break;// Reemplaza los dos bytes bajos (bits 0..15)
+            case 0b00:valorCompleto = nuevoValor;cantBytesOp=4;break; 
+            case 0b01:valorCompleto = (valorCompleto & 0xFFFFFF00) | (nuevoValor & 0xFF);cantBytesOp=1;break; 
+            case 0b10:valorCompleto = (valorCompleto & 0xFFFF00FF) | ((nuevoValor & 0xFF) << 8);cantBytesOp=1;break; 
+            case 0b11:valorCompleto = (valorCompleto & 0xFFFF0000) | (nuevoValor & 0xFFFF);cantBytesOp=2;break;
             default:
                 throw new IllegalArgumentException("Sector invalido: " + sectorRegistro);
         }
         
-        // Actualiza el registro con el nuevo valor.
+       
         setRegistro(nombreRegistro, valorCompleto);
         
-        //System.out.println("valor actualizado del registro CX "+ this.getECX());
-        //System.out.println("Valor registro CC "+ Integer.toBinaryString(getCC()));
+        
         return cantBytesOp;
     }
     
     public void modificarCC(int ultimoResultado, int numBytes) {
-        // 1) Truncado al ancho real: numBytes * 8 bits
+        
     	int SF = 1 << 31;
-    	int ZF = 1 << 30;  // Zero Flag (bit 30)
+    	int ZF = 1 << 30;  
         int bits = numBytes * 8;
         int mask = (bits == 32) ? 0xFFFF_FFFF : ((1 << bits) - 1);
         int resTrunc = ultimoResultado & mask;
 
-        // 2) Limpiar solo SF y ZF
+        
         int cc = getCC() & ~(SF | ZF);
 
-        // 3) Sign Flag: si el MSB dentro de resTrunc esta activo
+        
         int signMask = 1 << (bits - 1);
         if ((resTrunc & signMask) != 0) {
             cc |= SF;
         }
 
-        // 4) Zero Flag: si resTrunc == 0
+        
         if (resTrunc == 0) {
             cc |= ZF;
         }
 
-        // 5) Guardar CC actualizado
+        
         setCC(cc);
     }
     
     
-    //Getters y setters
     
     
     

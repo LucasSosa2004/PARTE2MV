@@ -13,7 +13,7 @@ import maquinaVirtual.MaquinaVirtual;
 
 public class Main {
     public static void main(String[] args) {
-    	int memoriaKiB = 16; // valor por defecto		
+    	int memoriaKiB = 16; 		
         boolean disassemblerMode = false;
         List<String> parametrosPrograma = new ArrayList<>();
         
@@ -70,15 +70,15 @@ public class Main {
 	            } else if (header.getVersion() == 2) {
 
 	                int tamMemoria = memoriaKiB * 1024;
-	                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria,archivos,false); // usa MemoriaV2 internamente
+	                MV = new MaquinaVirtual(header, parametrosPrograma, tamMemoria,archivos,false); 
 
 	                DisassemblerV2 disV2 = new DisassemblerV2(MV.getRegistros(),MV.getMemoria(),MV.getTabla());
 	                cargarCodigo(fis,MV);
                     if (disassemblerMode) {
-	                    disV2.mostrarCadenas();  // Primero mostrar cadenas
-	                    disV2.disassembleAll();  // Luego mostrar instrucciones
+	                    disV2.mostrarCadenas();  
+	                    disV2.disassembleAll();  
 	                    
-	                    // Restaurar IP al entry point después del disassembler
+	                    
 	                    int entryPoint = MV.getTabla().getSegmento("CS").getBase() + header.getEntryPoint();
 	                    MV.getRegistros().setIP(entryPoint);
 	                }
@@ -91,12 +91,11 @@ public class Main {
 	            
 	            if(disassemblerMode) {
 	            	int tamanoCodigo = header.getTamanoCodigov1();
-	            	//ejecutarDisassembler(MV,tamanoCodigo);
+	            	
 	            }
 	            if (!archivos.tieneVMI()){
 	            	MV.getTabla().mostrarTabla();
-	            	System.out.println(Integer.toHexString(MV.getRegistros().getSP()));
-	            	//MV.getMemoria().imprimirMemoria(MV.getTabla().getSegmento("CS").getBase(),485);
+	            	
 	            	ejecutarPrograma(MV);
 	            }
 	            else{
@@ -107,21 +106,19 @@ public class Main {
 	            	
 	            fis.close();
             }
-            else { // no vmx pero si vmi
+            else { 
             	int tamMemoria = memoriaKiB * 1024;
             	MV = new MaquinaVirtual(parametrosPrograma,tamMemoria,archivos,false);
             	if (archivos.tieneVMI()) {
                     archivos.cargarEnMV(MV); 
-                    MV.getUnidadAritmeticoLogica().cargarMain(parametrosPrograma);
+                    
 
-                    MV.getTabla().mostrarTabla(); 
-                    MV.getRegistros().mostrarRegistros();
-                    MV.getMemoria().imprimirMemoria(0,33);
                 }
 
                 if (disassemblerMode) {
-                	int tamanoCodigo = MV.getTabla().getSegmento("CS").getBase();
-            		ejecutarDisassembler(MV, tamanoCodigo);
+                	DisassemblerV2 disV2 = new DisassemblerV2(MV.getRegistros(),MV.getMemoria(),MV.getTabla());
+                	disV2.mostrarCadenas();  
+                	disV2.disassembleAll();  
                 } else {
                     ejecutarPrograma(MV);
                 }
@@ -149,13 +146,13 @@ public class Main {
         switch (identificador) {
             case "VMX25":
                 if (version == 1) {
-                    byte[] v1Extra = new byte[2]; // bytes 6-7
+                    byte[] v1Extra = new byte[2]; 
                     if (fis.read(v1Extra) != v1Extra.length) {
                         throw new IOException("Header .vmx v1 incompleto.");
                     }
                     int tamanoCodigo = ((v1Extra[0] & 0xFF) << 8) | (v1Extra[1] & 0xFF);
                     header.setTamanoCodigov1(tamanoCodigo);
-                    //System.out.println("tamano codigo = " + tamanoCodigo);
+                    
                 } else if (version == 2) {
                     byte[] v2Extra = new byte[12]; // bytes 6-17
                     if (fis.read(v2Extra) != v2Extra.length) {
@@ -166,13 +163,7 @@ public class Main {
                     header.agregarSegmento("DS", mascara2bytes(v2Extra[2], v2Extra[3]));
                     header.agregarSegmento("ES", mascara2bytes(v2Extra[4], v2Extra[5]));
                     header.agregarSegmento("SS", mascara2bytes(v2Extra[6], v2Extra[7]));
-                    /*
-                    header.setTamanoCS(((v2Extra[0] & 0xFF) << 8) | (v2Extra[1] & 0xFF));
-                    header.setTamanoDS(((v2Extra[2] & 0xFF) << 8) | (v2Extra[3] & 0xFF));
-                    header.setTamanoES(((v2Extra[4] & 0xFF) << 8) | (v2Extra[5] & 0xFF));
-                    header.setTamanoSS(((v2Extra[6] & 0xFF) << 8) | (v2Extra[7] & 0xFF));
-                    header.setTamanoKS(((v2Extra[8] & 0xFF) << 8) | (v2Extra[9] & 0xFF));
-                    */
+        
                     header.setEntryPoint(mascara2bytes(v2Extra[10], v2Extra[11]));
                 } else {
                     throw new IOException("Version de .vmx no soportada: " + version);
@@ -183,7 +174,7 @@ public class Main {
                 if (version != 1) {
                     throw new IOException("Version de .vmi no soportada: " + version);
                 }
-                byte[] vmiExtra = new byte[2]; // bytes 6-7
+                byte[] vmiExtra = new byte[2]; 
                 if (fis.read(vmiExtra) != vmiExtra.length) {
                     throw new IOException("Header .vmi incompleto.");
                 }
@@ -198,16 +189,16 @@ public class Main {
         return header;
     }
     
-    private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV, int tamanoCodigo) throws IOException { //en V2 se llama con el tamano del CS
-        int bytesLeidos = 0; //TODO
+    private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV, int tamanoCodigo) throws IOException { 
+        int bytesLeidos = 0; 
         int byteLeido;
         while (bytesLeidos < tamanoCodigo && (byteLeido = fis.read()) != -1) {
             MV.getMemoria().cargarByteAMemoria((byte) byteLeido, bytesLeidos);
             bytesLeidos++;
         }
     }
-    private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV) throws IOException { //en V2 se llama con el tamano del CS
-        int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); //TODO
+    private static void cargarCodigo(FileInputStream fis, MaquinaVirtual MV) throws IOException { 
+        int ptrCS = MV.getMemoria().getDireccionFisica(MV.getRegistros().getCS()); 
         int byteLeido;
         int limite = MV.getTabla().getSegmento("CS").getTamanio() + MV.getTabla().getSegmento("CS").getBase() ; 
         while (ptrCS <= limite && (byteLeido = fis.read()) != -1) {
@@ -215,7 +206,7 @@ public class Main {
             ptrCS++;
         }
         
-        // Cargar contenido del KS
+        
         if (MV.getTabla().getSegmento("KS") != null && MV.getTabla().getSegmento("KS").getTamanio() > 0) {
             int ptrKS = MV.getTabla().getSegmento("KS").getBase();
             int limiteKS = MV.getTabla().getSegmento("KS").getTamanio() + MV.getTabla().getSegmento("KS").getBase();
@@ -274,7 +265,7 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         int bytesInstruccion = 1;
         boolean IPcayoSegm = false;
-        boolean esperaInput = false;  // arranca ejecutando sin pausar
+        boolean esperaInput = false;  
         boolean ejecutar = true;
 
         int IP;
@@ -292,10 +283,10 @@ public class Main {
                 if (input.equals("q")) {
                     System.out.println("Ejecución finalizada.");
                     break;
-                } else if (input.isEmpty()) { // Step
+                } else if (input.isEmpty()) { 
                     esperaInput = true;
                     archivos.guardarArchivoVMI(MV.getRegistros(), MV.getMemoria(), MV.getTabla());
-                } else if (input.equals("d")) { // Continuar
+                } else if (input.equals("d")) { 
                     esperaInput = false;
                 } else {
                     System.out.println("Enter (step), d (continuar) o q (salir).");
@@ -308,7 +299,7 @@ public class Main {
             	bytesInstruccion = MV.getUnidadAritmeticoLogica().ejecutarInstruccion(primerByte);
             	IPcayoSegm = MV.caidaSegmentoIP();
             	
-            	// breakpoint despues de >>d
+            
             	if (!esperaInput && MV.getUnidadAritmeticoLogica().getBreakPointAnterior()) {
             		esperaInput = true;
             	}

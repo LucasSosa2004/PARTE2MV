@@ -14,7 +14,7 @@ public class DisassemblerV2 {
         this.registros = registros;
         this.memoria = memoria;
         this.tabla = tabla;
-        // Calcular la dirección física absoluta del entry point (base CS + offset entry point)
+        
         DescriptorSegmento segmentoCS = tabla.getSegmento("CS");
         if (segmentoCS != null) {
             this.entryPoint = segmentoCS.getBase() + tabla.getEntryPoint();
@@ -41,7 +41,7 @@ public class DisassemblerV2 {
         int dirBase = tabla.getSegmento(segmentoActual).getBase();
         int offset = registros.getIP() - dirBase;
         
-        if (codOperacion <= 0x0D) {  // Instrucciones de un operando 
+        if (codOperacion <= 0x0D) {  
             tipoOpA = (byte) ((primerByte >> 6) & 0x03);
 
             valorOpA = obtenerOpEnMemoria(tipoOpA, bytesYaLeidosInstruccion); 
@@ -53,7 +53,7 @@ public class DisassemblerV2 {
                     codOpAMnemonico(codOperacion),
                     decodificarOp(registros, tipoOpA, valorOpA));
         } 
-        else if (codOperacion == 0x0B || codOperacion == 0x0C) { // PUSH y POP
+        else if (codOperacion == 0x0B || codOperacion == 0x0C) { 
             tipoOpA = (byte) ((primerByte >> 6) & 0x03);
 
             valorOpA = obtenerOpEnMemoria(tipoOpA, bytesYaLeidosInstruccion); 
@@ -65,7 +65,7 @@ public class DisassemblerV2 {
                     codOpAMnemonico(codOperacion),
                     decodificarOp(registros, tipoOpA, valorOpA));
         }
-        else if (codOperacion >= 0x10 && codOperacion <= 0x1E) { // Instrucciones de dos operandos
+        else if (codOperacion >= 0x10 && codOperacion <= 0x1E) { 
             tipoOpB = (byte) ((primerByte & 0xC0) >> 6);
             tipoOpA = (byte) ((primerByte & 0x30) >> 4);
 
@@ -83,7 +83,7 @@ public class DisassemblerV2 {
                     decodificarOp(registros, tipoOpA, valorOpA),
                     decodificarOp(registros, tipoOpB, valorOpB));
         } 
-        else if (codOperacion == 0x0F) { // STOP
+        else if (codOperacion == 0x0F) { 
             instHexa = "0F";
             lineaDissasembler = "STOP";
             String entryPointMark = (registros.getIP() == entryPoint) ? "> " : "  ";
@@ -93,17 +93,17 @@ public class DisassemblerV2 {
                     registros.getIP(), 
                     instHexa, 
                     lineaDissasembler);
-            return -1; // Termina el disassembler
+            return -1; 
         }
-        else if (codOperacion == 0x0E) { // RET
+        else if (codOperacion == 0x0E) { 
             instHexa = "0E";
             lineaDissasembler = "RET";
         }
         else {
-            bytesYaLeidosInstruccion = -1; // instrucción inválida
+            bytesYaLeidosInstruccion = -1; 
         }
 
-        // Imprimir la instrucción con información del segmento y entry point
+        
         String entryPointMark = (registros.getIP() == entryPoint) ? "> " : "  ";
         System.out.printf("%s[%04X] %-20s | %s\n", 
                 entryPointMark,
@@ -123,7 +123,7 @@ public class DisassemblerV2 {
         int pos = base;
 
         while (pos < limite) {
-            // Buscar el inicio de una cadena (primer byte no nulo)
+            
             while (pos < limite && memoria.leerByte(pos) == 0) {
                 pos++;
             }
@@ -135,13 +135,13 @@ public class DisassemblerV2 {
             boolean cadenaCompleta = false;
             int bytesLeidos = 0;
 
-            // Leer la cadena hasta encontrar el null terminator o llegar al límite
+            
             while (pos < limite && !cadenaCompleta) {
                 byte b = memoria.leerByte(pos);
                 hexString.append(String.format("%02X ", b & 0xFF));
                 bytesLeidos++;
 
-                // Convertir a ASCII imprimible
+                
                 if (b >= 32 && b <= 126) {
                     asciiString.append((char)b);
                 } else {
@@ -154,18 +154,17 @@ public class DisassemblerV2 {
                 pos++;
             }
 
-            // Formatear la salida
+           
             String hexOutput = hexString.toString().trim();
             if (bytesLeidos > 7) {
-                // Tomar solo los primeros 6 bytes (18 caracteres: 6 bytes * 3 caracteres por byte)
+                
                 hexOutput = hexOutput.substring(0, 18) + " ..";
             }
 
-            // Determinar si es el entry point (comparamos el offset, no la dirección absoluta)
-            int offsetCadena = inicioCadena - base;
-            int entryPointOffset = tabla.getEntryPoint();
-            String entryPointMark = (offsetCadena == entryPointOffset) ? "> " : "  ";
+            
+            String entryPointMark = "  ";
 
+            int offsetCadena = inicioCadena - base;
             System.out.printf("%s[%04X] %-20s \"%s\"\n", 
                     entryPointMark,
                     offsetCadena,
@@ -178,11 +177,11 @@ public class DisassemblerV2 {
         int comienzoInstruccion = registros.getIP();
 
         switch (tipoOperando) {
-            case 0b01: // Registro (1 byte)
+            case 0b01: 
                 return memoria.leerOperando(comienzoInstruccion, bytesYaLeidosInstruccion, 1);
-            case 0b10: // Inmediato (2 bytes)
+            case 0b10: 
                 return memoria.leerOperando(comienzoInstruccion, bytesYaLeidosInstruccion, 2);
-            case 0b11: // Memoria (3 bytes)
+            case 0b11: 
                 return memoria.leerOperando(comienzoInstruccion, bytesYaLeidosInstruccion, 3);
             default:
                 return 0;
@@ -191,15 +190,15 @@ public class DisassemblerV2 {
 
     private int cantidadBytesOperando(byte tipoOperando) {
         switch (tipoOperando) {
-            case 0b00: return 0;  // Sin operando
-            case 0b01: return 1;  // Registro (1 byte)
-            case 0b10: return 2;  // Inmediato (2 bytes)
-            case 0b11: return 3;  // Memoria (3 bytes)
+            case 0b00: return 0;  
+            case 0b01: return 1;  
+            case 0b10: return 2;  
+            case 0b11: return 3;  
             default: return 0;
         }
     }
 
-    private String codOpAMnemonico(byte opcode) {
+    public String codOpAMnemonico(byte opcode) {
         switch (opcode) {
             case 0x0:  return "SYS";
             case 0x1:  return "JMP";
@@ -234,9 +233,9 @@ public class DisassemblerV2 {
         }
     }
 
-    private String decodificarOp(Registros registros, byte tipoOp, int operando) {
+    public String decodificarOp(Registros registros, byte tipoOp, int operando) {
         switch (tipoOp) {
-            case 0b01: // Registro
+            case 0b01: 
                 int aux = operando >> 4 & 0xF;
                 String nombreRegCompleto = registros.getNombreRegistro(aux);
                 int sector = (operando >> 2) & 0x3;
@@ -247,26 +246,26 @@ public class DisassemblerV2 {
                 String[] SUFIJOS = { "", "L", "H", "X" };
                 return medio + SUFIJOS[sector];
 
-            case 0b10: // Inmediato
+            case 0b10: 
                 short inmediatoConSigno = (short) operando;
                 return String.valueOf((int) inmediatoConSigno);
 
-            case 0b11: // Memoria
-                // Extraer tamaño de celda de los 2 bits menos significativos (bits 0-1)
+            case 0b11: 
+                
                 int tamanoCelda = operando & 0x3;
                 String prefijo;
                 switch (tamanoCelda) {
-                    case 0b00: prefijo = "l"; break; // long
-                    case 0b10: prefijo = "w"; break; // word
-                    case 0b11: prefijo = "b"; break; // byte
+                    case 0b00: prefijo = "l"; break; 
+                    case 0b10: prefijo = "w"; break; 
+                    case 0b11: prefijo = "b"; break; 
                     default: prefijo = ""; break;
                 }
                 
-                // El código del registro está en bits 4-7
+                
                 int codReg = (operando >> 4) & 0xF;
                 String nombreReg = registros.getNombreRegistro(codReg);
                 
-                // El offset está en bits 8-23 (16 bits)
+                
                 short offsetRaw = (short) ((operando >> 8) & 0xFFFF);
                 int offsetConSigno = offsetRaw;
                 
@@ -284,7 +283,7 @@ public class DisassemblerV2 {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%02X", primerByte & 0xFF));
         
-        // Añadir bytes del operando A
+        
         for (int i = 0; i < cantBytesOpA; i++) {
             sb.append(String.format(" %02X", (operando >> (i * 8)) & 0xFF));
         }
@@ -296,12 +295,12 @@ public class DisassemblerV2 {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%02X", primerByte & 0xFF));
         
-        // Añadir bytes del operando B
+        
         for (int i = 0; i < cantBytesOpB; i++) {
             sb.append(String.format(" %02X", (operandoB >> (i * 8)) & 0xFF));
         }
         
-        // Añadir bytes del operando A
+        
         for (int i = 0; i < cantBytesOpA; i++) {
             sb.append(String.format(" %02X", (operandoA >> (i * 8)) & 0xFF));
         }
@@ -310,7 +309,7 @@ public class DisassemblerV2 {
     }
 
     public void disassembleAll() {
-        // Obtener el segmento CS
+        
         DescriptorSegmento segmentoCS = tabla.getSegmento("CS");
         if (segmentoCS == null) return;
 
@@ -325,13 +324,13 @@ public class DisassemblerV2 {
             int bytesLeidos = decodificarInstruccion(primerByte);
 
             if (bytesLeidos <= 0) {
-                ip++; // Si la instrucción es inválida, avanzamos un byte
+                ip++; 
                 continue;
             }
 
             ip += bytesLeidos;
 
-            if (codOperacion == 0x0F) { // STOP
+            if (codOperacion == 0x0F) { 
                 break;
             }
         }

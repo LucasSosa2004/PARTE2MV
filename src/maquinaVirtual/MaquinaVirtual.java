@@ -21,8 +21,7 @@ public class MaquinaVirtual {
         this.dissasemblerAux = new DissasemblerAux(registros, memoria);
     }
     
-    //v2 
-    //MaquinaVirtual(header, parametrosPrograma, tamMemoria);
+    
     public MaquinaVirtual(List<String> parametros,  int tamMemoria, Archivos archivos, boolean testMode) {
     	this.tablaV2 = new TablaDescripSegmentosV2();
     	this.memoria = new MemoriaV2(parametros, tamMemoria,tablaV2);
@@ -84,23 +83,11 @@ public class MaquinaVirtual {
         unidadAritmeticoLogica.setJumpEjecutado(jumpEjecutado);
     }
 
-    /*
-    //si el siguient a CS no es DS 
-    public boolean caidaSegmentoIP() {
-        //Convertir el IP en una dir fisica
-        int IP = this.registros.getIP();
-        int DS = this.registros.getDS();
-
-        int IPdirFisica = this.memoria.getDireccionFisica(IP);
-        int DSdirFisica = this.memoria.getDireccionFisica(DS); //siguiente aCS
-
-        return IPdirFisica + 1 > DSdirFisica;
-    }*/
 
     public boolean caidaSegmentoIP() {
-        //Convertir el IP en una dir fisica
+       
         int IP = this.registros.getIP();
-        //registros.mostrarRegistros();
+      
         int IPdirFisica = this.memoria.getDireccionFisica(IP);
         if(tablaV2 == null) {
             int DS = this.registros.getDS();
@@ -110,7 +97,6 @@ public class MaquinaVirtual {
         else {
         	DescriptorSegmento CS = tablaV2.getSegmento("CS");
         	int finCS = CS.getBase()+CS.getTamanio();
-        	//System.out.println(Integer.toHexString(IPdirFisica) +" "+ finCS);
         	return IPdirFisica  > finCS;
         }
         

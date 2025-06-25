@@ -2,13 +2,13 @@ package maquinaVirtual;
 
 
 public class TablaDescripSegmentos {
-    private short[][] tablaDS = new short[8][2]; //short son 2 bytes
+    private short[][] tablaDS = new short[8][2]; 
 
     public TablaDescripSegmentos(short CS, int tamanio) {
         this.tablaDS[0][0] = 0;
         this.tablaDS[0][1] = CS;
         this.tablaDS[1][0] = CS;
-        this.tablaDS[1][1] = (short)tamanio; //memoria.kib
+        this.tablaDS[1][1] = (short)tamanio; 
     }
 
     public short getCS() {

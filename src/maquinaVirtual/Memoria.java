@@ -33,7 +33,7 @@ public class Memoria implements MemoriaBase {
 		return this.kib;
 	}
 	
-	public void cargarByteAMemoria(byte byteLeido, int posicion) { //posicion = byteLeidos
+	public void cargarByteAMemoria(byte byteLeido, int posicion) { 
 		if (posicion >= this.memoria.length) {
             throw new IndexOutOfBoundsException("Posicion invalida: " + posicion + " (debe estar entre 0 y " + (memoria.length - 1) + ")");
 		}
@@ -48,8 +48,7 @@ public class Memoria implements MemoriaBase {
     	memoria[direccionFisica] = byteACargar;
     }
 	
-	// Metodo para leer un byte desde una direccion fisica (Se usa internamente en esta clase)
-	//Las otras clases usan leerPrimerByte o leerOperando, ya que reciben dir_logicas
+	
 	 public byte leerByte(int direccionFisica) {
 	     if (direccionFisica < 0 || direccionFisica >= kib) {
 	         throw new IllegalArgumentException("Direccion fisica fuera de los limites de la memoria: " + direccionFisica);
@@ -77,7 +76,7 @@ public class Memoria implements MemoriaBase {
 	 
 	public int leerMemoria(int direccionLogica, int cantidadBytes) {
 	    int direccionFisica = getDireccionFisica(direccionLogica);
-	    cantidadBytes = 4; //por defecto en v1
+	    cantidadBytes = 4; 
 	    int valor = 0;
 	    for (int i = 0; i < cantidadBytes; i++) {
 	        valor = (valor << 8) | (memoria[direccionFisica + i] & 0xFF);
@@ -91,12 +90,12 @@ public class Memoria implements MemoriaBase {
 		
 	    int direccionFisica = getDireccionFisica(direccionLogica);
 	    
-	    // Validar que se disponga de 4 bytes a partir de la direccion fisica en memoria
+	    
 	    if (direccionFisica < 0 || direccionFisica + 3 >= kib) {
 	        throw new IllegalArgumentException("Direccion fuera de los limites de la memoria: " + direccionFisica);
 	    }
 	    
-	    // Escribir el valor en memoria
+	    
 	    memoria[direccionFisica]     = (byte) ((valor >> 24) & 0xFF);
 	    memoria[direccionFisica + 1] = (byte) ((valor >> 16) & 0xFF);
 	    memoria[direccionFisica + 2] = (byte) ((valor >> 8) & 0xFF);
@@ -116,9 +115,9 @@ public class Memoria implements MemoriaBase {
     }
 	
 	public int agregarOffset(int direccionLogica, int offsetAdicional) {
-	    int offset = (direccionLogica & 0xFFFF) + offsetAdicional; // Extraer solo el offset (los 16 bits bajos)
-	    offset &= 0xFFFF; // Asegurarse de que no se pase de 16 bits
-	    int segmento = direccionLogica & 0xFFFF0000; // Conservar el segmento (los 16 bits altos)
+	    int offset = (direccionLogica & 0xFFFF) + offsetAdicional; 
+	    offset &= 0xFFFF; 
+	    int segmento = direccionLogica & 0xFFFF0000; 
 	    return segmento | offset;
 	}
     public void escribirByteLogica(int direccionLogica, byte valor) {

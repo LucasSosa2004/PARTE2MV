@@ -8,12 +8,8 @@ public interface MemoriaBase {
 	    int leerOperando(int direccionLogica, int bytesYaLeidos, int cantidadBytes);
 	    int leerMemoria(int direccionLogica, int cantidadBytes);
 	    void escribirOperando(int direccionLogica, int valor);
-	    int agregarOffset(int direccionLogica, int offsetAdicional) ;/*{
-	        int offset = (direccionLogica & 0xFFFF) + offsetAdicional;
-	        offset &= 0xFFFF;
-	        int segmento = direccionLogica & 0xFFFF0000;
-	        return segmento | offset;
-	    }*/
+	    int agregarOffset(int direccionLogica, int offsetAdicional) ;
+	       
 	    byte leerPrimerByte(int dirLogicaIP);
 	    public void imprimirMemoria(int direccionLogica, int offset);
 	    public void cargarByte(byte byteACargar, int direccionLogica);

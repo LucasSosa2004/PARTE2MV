@@ -64,7 +64,7 @@ public class TablaDescripSegmentosV2 {
 
     public void setTabla(HeaderMV header) {
         ArrayList<DescriptorSegmento> segmentos = header.getSegmentos();
-        //HashMap<String, DescriptorSegmento> segmentosMap = new HashMap<>();
+        
 
         
         for(DescriptorSegmento segmento : segmentos) {
@@ -104,7 +104,7 @@ public class TablaDescripSegmentosV2 {
 		if(segmento == null) 
 			return -1;
 		else {
-			//System.out.println(registro + getIndice(registro));
+			
 			short base = (short) (getIndice(registro));
 			return (int) base << 16;
 		}
@@ -123,11 +123,11 @@ public class TablaDescripSegmentosV2 {
     public void mostrarTabla() {
 
     	for(DescriptorSegmento i: tabla) {
-    		System.out.println(i.getNombre() + " : "+ i.getBase() + " - " +i.getTamanio());
+    		
     	}
     }
     
-    //se tiene que usar en un segmento siguiente al PS
+    
     public DescriptorSegmento getAnterior(String segmento) {
     	try {
     		int i = getIndice(segmento);
@@ -171,7 +171,7 @@ public class TablaDescripSegmentosV2 {
         if (encontrado) {
             return tabla.get(i).getNombre();
         } else {
-            return "Sin segmento"; // No se encontró ningún segmento
+            return "Sin segmento"; 
         }
     }
 

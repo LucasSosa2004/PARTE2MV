@@ -16,7 +16,7 @@ public class UnidadAritmeticoLogica {
     	this.registros = registros;
     	this.memoria = memoria;
     	this.operaciones = new Operaciones(memoria, registros);
-    	this.testMode = testMode;  // Bandera de modo disassembler
+    	this.testMode = testMode;  
     }
 
     public UnidadAritmeticoLogica(Registros registros, MemoriaBase memoria, TablaDescripSegmentosV2 tabla,Archivos archivos, boolean testMode) {
@@ -24,7 +24,7 @@ public class UnidadAritmeticoLogica {
         this.memoria = memoria;
         int CS = tabla.getIndice("CS")<<16;
         this.operaciones = new Operaciones(memoria, registros, tabla,archivos,CS);
-        this.testMode = testMode;  // Bandera de modo disassembler
+        this.testMode = testMode;  
     }	
     
 
@@ -35,14 +35,14 @@ public class UnidadAritmeticoLogica {
         int bytesYaLeidosInstruccion = 1;  
         byte tipoOpA = 0, tipoOpB = 0;int valorOpA = 0, valorOpB = 0;int cantBytesOpA = 0, cantBytesOpB = 0;
         String instHexa = ""; String lineaDissasembler = "";	
-        if (codOperacion >= 0 && codOperacion <= 0x0D) {  // Instrucciones de un operando 
-            tipoOpA = (byte) ((primerByte >> 6) & 0x03); //aplico mascara para quedarme con los primeros dos bits
+        if (codOperacion >= 0 && codOperacion <= 0x0D) {  
+            tipoOpA = (byte) ((primerByte >> 6) & 0x03); 
 
             valorOpA = obtenerOpEnMemoria(tipoOpA, bytesYaLeidosInstruccion); 
             cantBytesOpA = cantidadBytesOperando(tipoOpA);
             bytesYaLeidosInstruccion += cantBytesOpA;
             
-            // Si estamos en modo TestMode, armamos la representacion textual.
+            
             if (testMode) {
             	instHexa = DissasemblerAux.concatenarInstHexa(primerByte, valorOpA, null);
             	lineaDissasembler = String.format("%s %s",
@@ -52,7 +52,7 @@ public class UnidadAritmeticoLogica {
             	
         } 
 
-        else if (codOperacion >= 0x10 && codOperacion <= 0x1E) { //Dos operandos
+        else if (codOperacion >= 0x10 && codOperacion <= 0x1E) { 
         	tipoOpB = (byte) ((primerByte & 0xC0) >> 6);
         	tipoOpA = (byte) ((primerByte & 0x30) >> 4); 
             
@@ -60,7 +60,7 @@ public class UnidadAritmeticoLogica {
             cantBytesOpB = cantidadBytesOperando(tipoOpB);
             bytesYaLeidosInstruccion += cantBytesOpB;
             
-            // Se obtiene operando A, que se encuentra justo despues del operando B
+            
             valorOpA = obtenerOpEnMemoria(tipoOpA, bytesYaLeidosInstruccion);
             cantBytesOpA = cantidadBytesOperando(tipoOpA);
 	        bytesYaLeidosInstruccion += cantBytesOpA;
@@ -75,41 +75,41 @@ public class UnidadAritmeticoLogica {
             }
                 
         } 
-        // Caso de instruccion STOP u otra no reconocida.
+        
         else if (codOperacion == 0x0F) {
             if (testMode) {
             	instHexa = "0F";
             	lineaDissasembler = "STOP";
             }
             
-            bytesYaLeidosInstruccion = -1; //o solo para cuando es ejecucion?
-        } else if(codOperacion == 0x0E){//ret
+            bytesYaLeidosInstruccion = -1; 
+        } else if(codOperacion == 0x0E){
         	operaciones.RET();
         	this.setJumpEjecutado(true);
         }else {
         	
-        	bytesYaLeidosInstruccion = -1; // instruccion invalida -> el codigo de operacion no existe
+        	bytesYaLeidosInstruccion = -1; 
         }
 
-        //System.out.println("PILA:"+Integer.toHexString(memoria.leerPila(registros.getSP())));
+       
     	if (bytesYaLeidosInstruccion > 0 && !this.isJumpEjecutado()) { 
     		this.registros.modificaIP(bytesYaLeidosInstruccion);      
-    		this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; // breakpoints (inmediato)
+    		this.breakPointAnterior = codOperacion == 0 && valorOpA == 0xF; 
         	if ((codOperacion >= 0 && codOperacion <= 0x0D)) {
         		ejecutarOperacionUnOperando(codOperacion, tipoOpA, valorOpA);
         	}
         	else if (codOperacion >= 0x10 && codOperacion <= 0x1E) {
         		ejecutarOperacionDosOperandos(codOperacion, tipoOpA, valorOpA, tipoOpB, valorOpB);
         	}
-    	} else { //Si hubo salto, el propio salto modifica el valor del IP
+    	} else { 
     		this.setJumpEjecutado(false);
     	}        	
     
+
         
-        // Si estamos en modo disassembler, imprimimos la instruccion sin ejecutarla.
         if (testMode) {
             System.out.printf("[%04X] %-20s | %s\n", registros.getIP(), instHexa, lineaDissasembler);
-        }
+        }   
         
         
         return bytesYaLeidosInstruccion;
@@ -119,16 +119,16 @@ public class UnidadAritmeticoLogica {
     
 	
     public int obtenerOpEnMemoria(byte tipoOperando, int bytesYaLeidosInstruccion) {
-        // Se calcula la posicion de inicio para leer el operando. Caso 2 operandos, bytesYaLeidos tendra un valor mayor
         
-    	int comienzoInstruccion = registros.getIP(); //La idea es usar dir logicas solamente
+        
+    	int comienzoInstruccion = registros.getIP(); 
 
     	switch (tipoOperando) {
-            case 0b01: // Operando de registro (1 byte)
+            case 0b01: 
                 return memoria.leerOperando(comienzoInstruccion, bytesYaLeidosInstruccion, 1);
-            case 0b10: // Operando inmediato (2 bytes)
+            case 0b10: 
                 return memoria.leerOperando(comienzoInstruccion, bytesYaLeidosInstruccion, 2);
-            case 0b11: // Operando de memoria (3 bytes)
+            case 0b11: 
                 return memoria.leerOperando(comienzoInstruccion, bytesYaLeidosInstruccion, 3);
             default:
             	return 0;
@@ -137,16 +137,16 @@ public class UnidadAritmeticoLogica {
     
     private int cantidadBytesOperando(byte tipoOperando) {
         switch (tipoOperando) {
-            case 0b00: return 0;  // Sin operando
-            case 0b01: return 1;  // Registro (1 byte)
-            case 0b10: return 2;  // Inmediato (2 bytes)
-            case 0b11: return 3;  // Memoria (3 bytes)
-            default: return 0;    // Por defecto
+            case 0b00: return 0;  
+            case 0b01: return 1;  
+            case 0b10: return 2;  
+            case 0b11: return 3;  
+            default: return 0;    
         }
     }
 	
 	
-    // Metodo auxiliar para ejecutar instrucciones de un operando.
+    
     private void ejecutarOperacionUnOperando(byte codOperacion, byte tipoOp, int valorOp) {
         switch (codOperacion) {
             case 0: operaciones.SYS(tipoOp, valorOp); break;
@@ -165,7 +165,7 @@ public class UnidadAritmeticoLogica {
         }
     }
     
-    // Metodo auxiliar para ejecutar instrucciones de dos operandos.
+    
     private void ejecutarOperacionDosOperandos(byte codOperacion, byte tipoOpA, int valorOpA, byte tipoOpB, int valorOpB) {
     	switch (codOperacion) {
             case 0x10: operaciones.MOV(tipoOpA, valorOpA, tipoOpB, valorOpB); break;
@@ -205,8 +205,6 @@ public class UnidadAritmeticoLogica {
 		byte PUSH = 11;
 		byte inmediato = 2;
 		int argc=0,argv=-1;
-		System.out.println("sp antes"+ Integer.toHexString(registros.getSP()));
-		
 		if(!(parametros.isEmpty())) {
 			argv = 0;
 			argc = parametros.size();
@@ -214,12 +212,46 @@ public class UnidadAritmeticoLogica {
 				argv += parametro.length()+1;
 			}
 		}
-		//registros.setSP(registros.getSP());
+		
 		operaciones.PUSH(inmediato, argv);
 		operaciones.PUSH(inmediato, argc);
 		operaciones.PUSH(inmediato, -1);
-		System.out.println("sp desp"+ Integer.toHexString(registros.getSP()));
 	}
+
+        public String codOpAMnemonicoDebug(byte opcode) {
+        switch (opcode) {
+            case 0x0:  return "SYS";
+            case 0x1:  return "JMP";
+            case 0x2:  return "JZ";
+            case 0x3:  return "JP";
+            case 0x4:  return "JN";
+            case 0x5:  return "JNZ";
+            case 0x6:  return "JNP";
+            case 0x7:  return "JNN";
+            case 0x8:  return "NOT";
+            case 0x0B: return "PUSH";
+            case 0x0C: return "POP";
+            case 0x0D: return "CALL";
+            case 0x0E: return "RET";
+            case 0x0F: return "STOP";
+            case 0x10: return "MOV";
+            case 0x11: return "ADD";
+            case 0x12: return "SUB";
+            case 0x13: return "SWAP";
+            case 0x14: return "MUL";
+            case 0x15: return "DIV";
+            case 0x16: return "CMP";
+            case 0x17: return "SHL";
+            case 0x18: return "SHR";
+            case 0x19: return "AND";
+            case 0x1A: return "OR";
+            case 0x1B: return "XOR";
+            case 0x1C: return "LDL";
+            case 0x1D: return "LDH";
+            case 0x1E: return "RND";
+            default: return "UNK";
+        }
+    }
 
 }
 

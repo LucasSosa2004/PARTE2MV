@@ -18,10 +18,10 @@ public class HeaderMV {
     private int tamanoKS;
     private int entryPoint;
 
-//    private HashMap<String,Integer> segmentos = new HashMap<String, Integer>();
+
     private ArrayList<DescriptorSegmento> segmentos = new ArrayList<DescriptorSegmento>();
     
-    // Para .vmi
+    
     private int memoriaKiB;
 
     public HeaderMV(String identificador, int version) {
@@ -29,7 +29,7 @@ public class HeaderMV {
         this.version = version;
     }
 
-    // Getters
+    
     public ArrayList<DescriptorSegmento> getSegmentos(){
     	return segmentos;
     }
@@ -74,7 +74,7 @@ public class HeaderMV {
         return memoriaKiB;
     }
 
-    // Setters
+    
     public void agregarSegmento(String segmento, int tamanio) {
     	segmentos.add(new DescriptorSegmento(segmento,(short)tamanio));
     }
@@ -111,7 +111,7 @@ public class HeaderMV {
         this.memoriaKiB = memoriaKiB;
     }
 
-    // Identificadores validos
+    
     public boolean isVmx() {
         return identificador.equals("VMX25");
     }
@@ -124,7 +124,7 @@ public class HeaderMV {
         return isVmx() || isVmi();
     }
 
-    // Representacion legible
+   
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -151,7 +151,7 @@ public class HeaderMV {
 
     public void motrtrarSegmentos() {
         for (DescriptorSegmento segmento : segmentos) {
-            System.out.println(segmento.toString());
+            
         }
     }
 }

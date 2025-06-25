@@ -73,15 +73,17 @@ public class Archivos {
             registros.addRegistro(reg, valor);
         }
 
-        // tabla
+    
+
+       
         for (int i = 0; i < 8; i++) {
-            // 2 bytes base
+           
             int hiBase = fis.read();
             int loBase = fis.read();
             if (loBase == -1) throw new IOException("Descriptor base incompleto");
             short base = (short)((hiBase << 8) | (loBase & 0xFF));
 
-            // 2 bytes límite
+            
             int hiLim = fis.read();
             int loLim = fis.read();
             if (loLim == -1) throw new IOException("Descriptor límite incompleto");
@@ -99,11 +101,11 @@ public class Archivos {
         } 
 
         tabla.mostrarTabla();
-        registros.mostrarRegistros();
+        
         int CS = tabla.getIndice("CS")<<16;
         MV.setCSOperaciones(CS);
         
-        // memoria
+        
         MemoriaBase memoria = MV.getMemoria();
         int offset = 0,readByte;
         while (offset < memoriaKiB && (readByte = fis.read()) != -1) {
@@ -117,16 +119,16 @@ public class Archivos {
         if (archivoVMI == null) throw new IOException("No hay archivo VMI definido para guardar");
 
         try (FileOutputStream fos = new FileOutputStream(archivoVMI)) {
-            // Header
-            fos.write("VMI25".getBytes()); // 5 bytes
-            fos.write(1); // versión
+            
+            fos.write("VMI25".getBytes()); 
+            fos.write(1); 
 
-            // Tamaño de memoria
+           
             int memoriaKiB = memoria.getMemoriaRaw().length;
-            fos.write((memoriaKiB >> 8) & 0xFF); // byte alto
-            fos.write(memoriaKiB & 0xFF);        // byte bajo
+            fos.write((memoriaKiB >> 8) & 0xFF); 
+            fos.write(memoriaKiB & 0xFF);       
 
-            // Registros
+            
             for (int i = 0; i < 16; i++) {
                 int valor = registros.getRegistro(i);
                 fos.write((valor >> 24) & 0xFF);
@@ -135,7 +137,7 @@ public class Archivos {
                 fos.write(valor & 0xFF);
             }
 
-            // Tabla de segmentos (PS, CS, DS, ES, SS, KS)
+            
             for(int i=0;i<8;i++) {
             	DescriptorSegmento segmento = tabla.getSegmento(i);
                 short base = 0;
@@ -151,24 +153,6 @@ public class Archivos {
                 fos.write(limite & 0xFF);
                 
             }
-            /*
-            int j=0;
-            for (int i = 0; i < 8; i++) {
-            	String nombre = tabla.getNombreSegmentoVMI(i);
-            	DescriptorSegmento segmento = tabla.getSegmento(j); // puede ser null
-                short base = 0;
-                short limite = 0;
-                if(segmento != null && segmento.getNombre().equals(nombre)) {
-            		base = segmento.getBase();
-            		limite = segmento.getTamanio();
-            		j++;
-                }
-                System.out.println("VMI"+base +" "+ limite);
-                fos.write((base >> 8) & 0xFF);
-                fos.write(base & 0xFF);
-                fos.write((limite >> 8) & 0xFF);
-                fos.write(limite & 0xFF);
-            }*/
 
             byte[] mem = memoria.getMemoriaRaw();
             fos.write(mem);
